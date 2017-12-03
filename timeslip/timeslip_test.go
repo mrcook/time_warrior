@@ -142,12 +142,12 @@ func TestResuming(t *testing.T) {
 }
 
 func TestFinishingAStartedTask(t *testing.T) {
-	tenMinutes := int((time.Minute * 10).Seconds())
+	tenMinutesInSeconds := int((10 * time.Minute).Seconds())
 	description := "Write tests for completing a started time slip"
 
 	ts, _ := timeslip.New("Work.Done")
-	ts.Started -= tenMinutes
-	ts.Modified -= tenMinutes
+	ts.Started -= tenMinutesInSeconds
+	ts.Modified -= tenMinutesInSeconds
 
 	modifiedTime := ts.Modified
 
@@ -159,8 +159,8 @@ func TestFinishingAStartedTask(t *testing.T) {
 	if ts.Description != description {
 		t.Errorf("Expected description to be '%s', got '%s'", description, ts.Description)
 	}
-	if ts.Worked < tenMinutes {
-		t.Errorf("Expected worked time to be at least %d seconds, got %d", tenMinutes, ts.Worked)
+	if ts.Worked < tenMinutesInSeconds {
+		t.Errorf("Expected worked time to be at least %d seconds, got %d", tenMinutesInSeconds, ts.Worked)
 	}
 	if ts.Finished == 0 {
 		t.Errorf("Expected finished time to have been updated, got %d", ts.Finished)
@@ -171,9 +171,9 @@ func TestFinishingAStartedTask(t *testing.T) {
 }
 
 func TestFinishingAPausedTask(t *testing.T) {
-	oneHourAgo := int(time.Now().Unix() - int64(time.Hour*1))
-	halfHourAgo := int(time.Now().Unix() - int64(time.Minute*30))
-	fifteenMinutes := int((time.Minute * 15).Seconds())
+	oneHourAgo := int(time.Now().Add(-1 * time.Hour).Unix())
+	halfHourAgo := int(time.Now().Add(-30 * time.Minute).Unix())
+	fifteenMinutes := int((15 * time.Minute).Seconds())
 
 	ts := timeslip.Slip{
 		Started:  oneHourAgo,
