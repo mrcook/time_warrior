@@ -1,6 +1,7 @@
 package timeslip
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -39,6 +40,14 @@ func New(name string) (*Slip, error) {
 	}
 
 	return slip, nil
+}
+
+func Unmarshal(blob []byte, ts *Slip) error {
+	err := json.Unmarshal(blob, ts)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Slip) Pause() error {

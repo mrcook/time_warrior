@@ -194,3 +194,60 @@ func TestFinishingAPausedTask(t *testing.T) {
 		t.Error("Expected modified time to have been updated")
 	}
 }
+
+func TestNewFromJSONUnmarshallError(t *testing.T) {
+	var badJSON = []byte(`"project": "BadWarrior", "task":`)
+
+	err := timeslip.Unmarshal(badJSON, &timeslip.Slip{})
+	if err == nil {
+		t.Error("Expected unamrshal error")
+	}
+}
+
+func TestNewFromJSON(t *testing.T) {
+	slip := &timeslip.Slip{}
+	var jsonBlob = []byte(`{
+		"project": "timeWarrior",
+		"task": "Unmarshal",
+		"description": "Testing import of JSON",
+		"started": 1442669540,
+		"worked": 472,
+		"finished": 1442674736,
+		"modified": 1442674736,
+		"status": "completed",
+		"uuid": "0d8e895e-d3db-4887-86e3-8bb7f63ba101"
+	}`)
+
+	err := timeslip.Unmarshal(jsonBlob, slip)
+	if err != nil {
+		t.Error("Failed to unamrshal the JSON data: ", err)
+	}
+
+	if slip.Project != "timeWarrior" {
+		t.Errorf("Expected project name, got '%s'", slip.Project)
+	}
+	if slip.Task != "Unmarshal" {
+		t.Errorf("Expected task name, got '%s'", slip.Task)
+	}
+	if slip.Description != "Testing import of JSON" {
+		t.Errorf("Expected description, got '%s'", slip.Description)
+	}
+	if slip.Started != 1442669540 {
+		t.Errorf("Expected started time, got '%d'", slip.Started)
+	}
+	if slip.Worked != 472 {
+		t.Errorf("Expected time worked, got '%d'", slip.Worked)
+	}
+	if slip.Finished != 1442674736 {
+		t.Errorf("Expected finished time, got '%d'", slip.Finished)
+	}
+	if slip.Modified != 1442674736 {
+		t.Errorf("Expected modified time, got '%d'", slip.Modified)
+	}
+	if slip.Status != status.Completed() {
+		t.Errorf("Expected status to be '%s', got '%s'", status.Completed(), slip.Status)
+	}
+	if slip.UUID != "0d8e895e-d3db-4887-86e3-8bb7f63ba101" {
+		t.Errorf("Expected UUID, got '%s'", slip.UUID)
+	}
+}
