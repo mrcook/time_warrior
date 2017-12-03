@@ -198,17 +198,16 @@ func TestFinishingAPausedTask(t *testing.T) {
 func TestNewFromJSONUnmarshallError(t *testing.T) {
 	var badJSON = []byte(`"project": "BadWarrior", "task":`)
 
-	err := timeslip.Unmarshal(badJSON, &timeslip.Slip{})
+	_, err := timeslip.NewFromJSON(badJSON)
 	if err == nil {
 		t.Error("Expected unamrshal error")
 	}
 }
 
 func TestNewFromJSON(t *testing.T) {
-	slip := &timeslip.Slip{}
 	var jsonBlob = []byte(`{
 		"project": "timeWarrior",
-		"task": "Unmarshal",
+		"task": "NewFromJSON",
 		"description": "Testing import of JSON",
 		"started": 1442669540,
 		"worked": 472,
@@ -218,7 +217,7 @@ func TestNewFromJSON(t *testing.T) {
 		"uuid": "0d8e895e-d3db-4887-86e3-8bb7f63ba101"
 	}`)
 
-	err := timeslip.Unmarshal(jsonBlob, slip)
+	slip, err := timeslip.NewFromJSON(jsonBlob)
 	if err != nil {
 		t.Error("Failed to unamrshal the JSON data: ", err)
 	}
@@ -226,7 +225,7 @@ func TestNewFromJSON(t *testing.T) {
 	if slip.Project != "timeWarrior" {
 		t.Errorf("Expected project name, got '%s'", slip.Project)
 	}
-	if slip.Task != "Unmarshal" {
+	if slip.Task != "NewFromJSON" {
 		t.Errorf("Expected task name, got '%s'", slip.Task)
 	}
 	if slip.Description != "Testing import of JSON" {

@@ -42,12 +42,13 @@ func New(name string) (*Slip, error) {
 	return slip, nil
 }
 
-func Unmarshal(blob []byte, ts *Slip) error {
-	err := json.Unmarshal(blob, ts)
+func NewFromJSON(blob []byte) (*Slip, error) {
+	slip := &Slip{}
+	err := json.Unmarshal(blob, slip)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return slip, nil
 }
 
 func (s *Slip) Pause() error {
