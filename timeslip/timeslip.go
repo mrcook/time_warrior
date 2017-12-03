@@ -10,15 +10,15 @@ import (
 )
 
 type Slip struct {
-	Project   string
-	Task      string
-	Comment   string
-	Started   int
-	Worked    int
-	Completed int
-	Modified  int
-	Status    string
-	UUID      string
+	Project     string
+	Task        string
+	Description string
+	Started     int
+	Worked      int
+	Finished    int
+	Modified    int
+	Status      string
+	UUID        string
 }
 
 func New(name string) (*Slip, error) {
@@ -29,13 +29,13 @@ func New(name string) (*Slip, error) {
 	}
 
 	slip := &Slip{
-		Project:  project,
-		Task:     task,
-		Comment:  "New Time Slip",
-		Started:  currentTime,
-		Modified: currentTime,
-		Status:   status.Started(),
-		UUID:     uuid.New().String(),
+		Project:     project,
+		Task:        task,
+		Description: "New Time Slip",
+		Started:     currentTime,
+		Modified:    currentTime,
+		Status:      status.Started(),
+		UUID:        uuid.New().String(),
 	}
 
 	return slip, nil
@@ -46,10 +46,8 @@ func (s *Slip) Pause() error {
 		return fmt.Errorf("Slip is already paused")
 	}
 
-	// TODO: test this increment!
-	s.Worked += timeNow() - s.Modified
-
 	s.Status = status.Paused()
+	s.Worked += timeNow() - s.Modified
 	s.Modified = timeNow()
 
 	return nil
@@ -65,6 +63,22 @@ func (s Slip) isPaused() bool {
 func (s *Slip) Resume() {
 	s.Status = status.Started()
 	s.Modified = timeNow()
+}
+
+func (s *Slip) Done(description string) {
+	currentTime := timeNow()
+
+	if s.Status == status.Started() {
+		s.Worked += currentTime - s.Modified
+		s.Finished = currentTime
+		s.Modified = s.Finished
+	} else {
+		s.Finished = s.Modified
+		s.Modified = timeNow()
+	}
+
+	s.Description = description
+	s.Status = status.Completed()
 }
 
 func parseProjectName(name string) (string, string, error) {

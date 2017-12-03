@@ -21,8 +21,8 @@ func TestNewTimeSlipDefaults(t *testing.T) {
 	if ts.Task != "New" {
 		t.Errorf("Expected Task to be 'New', got '%s'", ts.Task)
 	}
-	if ts.Comment != "New Time Slip" {
-		t.Errorf("Expected default comment to be 'New Time Slip', got '%s'", ts.Comment)
+	if ts.Description != "New Time Slip" {
+		t.Errorf("Expected default comment to be 'New Time Slip', got '%s'", ts.Description)
 	}
 	if ts.Started == 0 {
 		t.Error("Expected time to have been set")
@@ -137,5 +137,60 @@ func TestResuming(t *testing.T) {
 	currentTime := int(time.Now().Unix())
 	if ts.Modified < currentTime-2 {
 		t.Errorf("Expected Modified to be updated, current time is %d, got %d", currentTime, ts.Modified)
+	}
+}
+
+func TestFinishingAStartedTask(t *testing.T) {
+	tenMinutes := int((time.Minute * 10).Seconds())
+	description := "Write tests for completing a started time slip"
+
+	ts, _ := timeslip.New("Work.Done")
+	ts.Started -= tenMinutes
+	ts.Modified -= tenMinutes
+
+	modifiedTime := ts.Modified
+
+	ts.Done(description)
+
+	if ts.Status != status.Completed() {
+		t.Errorf("Expected status to be '%s', got '%s'", status.Completed(), ts.Status)
+	}
+	if ts.Description != description {
+		t.Errorf("Expected description to be '%s', got '%s'", description, ts.Description)
+	}
+	if ts.Worked < tenMinutes {
+		t.Errorf("Expected worked time to be at least %d seconds, got %d", tenMinutes, ts.Worked)
+	}
+	if ts.Finished == 0 {
+		t.Errorf("Expected finished time to have been updated, got %d", ts.Finished)
+	}
+	if ts.Modified == modifiedTime {
+		t.Error("Expected modified time to have been updated")
+	}
+}
+
+func TestFinishingAPausedTask(t *testing.T) {
+	oneHourAgo := int(time.Now().Unix() - int64((time.Hour * 1).Seconds()))
+	halfHourAgo := int(time.Now().Unix() - int64((time.Minute * 30).Seconds()))
+	fifteenMinutes := int((time.Minute * 15).Seconds())
+
+	ts := timeslip.Slip{
+		Started:  oneHourAgo,
+		Worked:   fifteenMinutes,
+		Modified: halfHourAgo,
+		Status:   status.Paused(),
+	}
+	modifiedTime := halfHourAgo
+
+	ts.Done("Write tests for completing a paused time slip")
+
+	if ts.Finished > modifiedTime {
+		t.Errorf("Expected finished time '%d', to equal original modified time '%d'", ts.Finished, modifiedTime)
+	}
+	if ts.Worked != fifteenMinutes {
+		t.Errorf("Expected time worked to not change from %d, got %d", fifteenMinutes, ts.Worked)
+	}
+	if ts.Modified == modifiedTime {
+		t.Error("Expected modified time to have been updated")
 	}
 }

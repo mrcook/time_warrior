@@ -7,3 +7,7 @@ func Started() string {
 func Paused() string {
 	return "paused"
 }
+
+func Completed() string {
+	return "completed"
+}
