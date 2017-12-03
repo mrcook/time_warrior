@@ -1,6 +1,7 @@
 package timeslip_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -170,8 +171,8 @@ func TestFinishingAStartedTask(t *testing.T) {
 }
 
 func TestFinishingAPausedTask(t *testing.T) {
-	oneHourAgo := int(time.Now().Unix() - int64((time.Hour * 1).Seconds()))
-	halfHourAgo := int(time.Now().Unix() - int64((time.Minute * 30).Seconds()))
+	oneHourAgo := int(time.Now().Unix() - int64(time.Hour*1))
+	halfHourAgo := int(time.Now().Unix() - int64(time.Minute*30))
 	fifteenMinutes := int((time.Minute * 15).Seconds())
 
 	ts := timeslip.Slip{
@@ -248,5 +249,36 @@ func TestNewFromJSON(t *testing.T) {
 	}
 	if slip.UUID != "0d8e895e-d3db-4887-86e3-8bb7f63ba101" {
 		t.Errorf("Expected UUID, got '%s'", slip.UUID)
+	}
+}
+
+func TestFullName(t *testing.T) {
+	slip := timeslip.Slip{Project: "timeWarrior", Task: "FullName"}
+
+	if slip.FullName() != "timeWarrior.FullName" {
+		t.Errorf("Expected Project and Task names joined with a perdiod, got: %s", slip.FullName())
+	}
+
+	slip.Task = ""
+	if slip.FullName() != "timeWarrior" {
+		t.Errorf("Expected just the project name, got: %s", slip.FullName())
+	}
+}
+
+func TestStringOutput(t *testing.T) {
+	sixMinutesAgo := time.Now().Add(-6 * time.Minute)
+	started := int(sixMinutesAgo.Unix())
+	formattedStart := sixMinutesAgo.Format("2006-01-02 15:04")
+
+	slip, _ := timeslip.New("timeWarrior.String")
+	slip.Started = started
+	slip.Modified = started
+	slip.Pause()
+
+	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 mins | Status: paused", formattedStart)
+
+	output := slip.String()
+	if output != expectedOutput {
+		t.Errorf("Formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
 	}
 }

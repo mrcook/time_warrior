@@ -91,6 +91,22 @@ func (s *Slip) Done(description string) {
 	s.Status = status.Completed()
 }
 
+func (s Slip) FullName() string {
+	if s.Task == "" {
+		return s.Project
+	}
+	return s.Project + "." + s.Task
+}
+
+func (s Slip) String() string {
+	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
+	return fmt.Sprintf("%s | Started: %s | Worked: %d mins | Status: %s", s.FullName(), started, s.minutesWorked(), s.Status)
+}
+
+func (s Slip) minutesWorked() int {
+	return s.Worked / 60
+}
+
 func parseProjectName(name string) (string, string, error) {
 	names := strings.Split(name, ".")
 
