@@ -1,10 +1,12 @@
 package timeslip
 
 import (
-	"errors"
-	"github.com/google/uuid"
+	"fmt"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/mrcook/time_warrior/timeslip/status"
 )
 
 type Slip struct {
@@ -12,7 +14,7 @@ type Slip struct {
 	Task      string
 	Comment   string
 	Started   int
-	Logged    int
+	Worked    int
 	Completed int
 	Modified  int
 	Status    string
@@ -32,11 +34,37 @@ func New(name string) (*Slip, error) {
 		Comment:  "New Time Slip",
 		Started:  currentTime,
 		Modified: currentTime,
-		Status:   "started",
+		Status:   status.Started(),
 		UUID:     uuid.New().String(),
 	}
 
 	return slip, nil
+}
+
+func (s *Slip) Pause() error {
+	if s.Status == status.Paused() {
+		return fmt.Errorf("Slip is already paused")
+	}
+
+	// TODO: test this increment!
+	s.Worked += timeNow() - s.Modified
+
+	s.Status = status.Paused()
+	s.Modified = timeNow()
+
+	return nil
+}
+
+func (s Slip) isPaused() bool {
+	if s.Status == status.Paused() {
+		return false
+	}
+	return true
+}
+
+func (s *Slip) Resume() {
+	s.Status = status.Started()
+	s.Modified = timeNow()
 }
 
 func parseProjectName(name string) (string, string, error) {
@@ -48,6 +76,10 @@ func parseProjectName(name string) (string, string, error) {
 	case 2:
 		return names[0], names[1], nil
 	default:
-		return "", "", errors.New("Bad Project/Task name format. Expected 'ProjectName.TaskName' format")
+		return "", "", fmt.Errorf("Bad Project/Task name format. Expected 'ProjectName.TaskName' format")
 	}
+}
+
+func timeNow() int {
+	return int(time.Now().Unix())
 }
