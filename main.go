@@ -7,19 +7,14 @@ import (
 	"os"
 	"path"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mrcook/time_warrior/cmd"
 	"github.com/mrcook/time_warrior/configuration"
 )
 
-func init() {
-	config := configuration.New()
+var config *configuration.Config
 
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	config.HomeDirectory = home
+func init() {
+	config = configuration.New()
 
 	if err := setupNewInstall(config); err != nil {
 		fmt.Printf("%v", err)
@@ -33,6 +28,7 @@ func init() {
 }
 
 func main() {
+	cmd.Execute()
 }
 
 func setupNewInstall(config *configuration.Config) error {
