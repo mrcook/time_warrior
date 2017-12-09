@@ -8,4 +8,4 @@
 
 [[constraint]]
   name = "github.com/spf13/cobra"
-  version = "0.0.1"
+  revision = "ccaecb155a2177302cb56cae929251a256d0f646"

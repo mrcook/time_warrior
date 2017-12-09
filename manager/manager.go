@@ -24,42 +24,44 @@ func NewFromConfig(cfg *configuration.Config) *Manager {
 	}
 }
 
-func (m Manager) StartNewSlip(name string) {
-	if m.outstandingTimeSlipExists() {
-		pending, err := m.outstandingTimeSlip()
+func (m Manager) StartNewSlip(name string) *timeslip.Slip {
+	if m.PendingTimeSlipExists() {
+		slip, err := m.PendingTimeSlip()
 		if err != nil {
 			fmt.Errorf("%v", err)
-			return
+			return nil
 		}
 
-		fmt.Println("Aborting. Outstanding time slip present!")
-		fmt.Println(pending.String())
-		return
+		fmt.Println("Aborting. Pending time slip already exists!")
+		return slip
 	}
 
 	slip, err := timeslip.New(name)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
 	m.saveAsPending(slip.ToJson())
-	fmt.Println(slip)
+
+	return slip
 }
 
-func (m Manager) saveAsPending(slipJson []byte) {
-	if len(slipJson) == 0 {
-		fmt.Println("Missing pending JSON data. Aborting!")
-		return
-	}
-
-	err := ioutil.WriteFile(m.pendingFile, slipJson, 0644)
+func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
+	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
-		fmt.Errorf("unable to save pending JSON data: %v", err)
+		return nil, err
 	}
+
+	slip, err := timeslip.NewFromJSON(record)
+	if err != nil {
+		return nil, err
+	}
+
+	return slip, nil
 }
 
-func (m Manager) outstandingTimeSlipExists() bool {
+func (m Manager) PendingTimeSlipExists() bool {
 	file, err := os.Stat(m.pendingFile)
 	if err != nil {
 		fmt.Errorf("%v", err)
@@ -72,16 +74,14 @@ func (m Manager) outstandingTimeSlipExists() bool {
 	return false
 }
 
-func (m Manager) outstandingTimeSlip() (*timeslip.Slip, error) {
-	record, err := ioutil.ReadFile(m.pendingFile)
-	if err != nil {
-		return nil, err
+func (m Manager) saveAsPending(slipJson []byte) {
+	if len(slipJson) == 0 {
+		fmt.Println("Missing pending JSON data. Aborting!")
+		return
 	}
 
-	slip, err := timeslip.NewFromJSON(record)
+	err := ioutil.WriteFile(m.pendingFile, slipJson, 0644)
 	if err != nil {
-		return nil, err
+		fmt.Errorf("unable to save pending JSON data: %v", err)
 	}
-
-	return slip, nil
 }

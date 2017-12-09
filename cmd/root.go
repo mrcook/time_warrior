@@ -6,19 +6,35 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mrcook/time_warrior/configuration"
 	"github.com/spf13/cobra"
+
+	"github.com/mrcook/time_warrior/configuration"
+	"github.com/mrcook/time_warrior/manager"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "time_warrior",
-	Short: "TimeWarrior: a CLI based time tracking tool",
+	Use:     "time_warrior",
+	Version: "0.0.1",
+	Short:   "TimeWarrior: a CLI based time tracking tool",
 	Long: `TimeWarrior is a command line based time tracking tool for
 developers and other freelance workers who need to track
 time worked on their client and personal projects.`,
-	//Run: func(cmd *cobra.Command, args []string) {
-	//},
+	Run: func(cmd *cobra.Command, args []string) {
+		m := manager.NewFromConfig(initializeConfig())
+		if !m.PendingTimeSlipExists() {
+			cmd.Help()
+			return
+		}
+
+		slip, err := m.PendingTimeSlip()
+		if err != nil {
+			fmt.Errorf("%v", err)
+			return
+		}
+
+		fmt.Println(slip)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

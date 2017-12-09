@@ -3,6 +3,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +20,9 @@ name must be separated by a period. Example: TimeWarrior.StartTask`,
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())
-		m.StartNewSlip(args[0])
+		if slip := m.StartNewSlip(args[0]); slip != nil {
+			fmt.Println(slip)
+		}
 	},
 }
 
