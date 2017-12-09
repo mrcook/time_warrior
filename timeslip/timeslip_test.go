@@ -75,7 +75,7 @@ func TestMultiplePeriodsInProjectName(t *testing.T) {
 		t.Errorf("Expected an Error due to multiple periods being used.")
 	}
 
-	errorMessage := "Bad Project/Task name format. Expected 'ProjectName.TaskName' format"
+	errorMessage := "bad Project/Task name format. Expected 'ProjectName.TaskName' format"
 	if err.Error() != errorMessage {
 		t.Errorf("Expected '%s' error, got '%v'", errorMessage, err)
 	}
@@ -281,6 +281,52 @@ func TestStringOutput(t *testing.T) {
 
 	output := slip.String()
 	if output != expectedOutput {
+		t.Errorf("Formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
+	}
+}
+
+func TestMinutesWorkedForPausedSlip(t *testing.T) {
+	timeNow := time.Now()
+	started := timeNow.Add(-3 * time.Hour)
+
+	slip := timeslip.Slip{
+		Project:  "timeWarrior",
+		Task:     "MinutesWorked",
+		Started:  int(started.Unix()),
+		Worked:   int((18 * time.Minute).Seconds()),
+		Modified: int(timeNow.Add(-1 * time.Hour).Unix()),
+		Status:   status.Paused(),
+	}
+
+	if slip.MinutesWorked() != 18 {
+		t.Errorf("Expected 18 minutes worked to be returned, got %d", slip.MinutesWorked())
+	}
+}
+
+func TestMinutesWorkedForStartedSlip(t *testing.T) {
+	timeNow := time.Now()
+	started := timeNow.Add(-3 * time.Hour)
+
+	slip := timeslip.Slip{
+		Project:  "timeWarrior",
+		Task:     "MinutesWorked",
+		Started:  int(started.Unix()),
+		Worked:   int((23 * time.Minute).Seconds()),
+		Modified: int(timeNow.Add(-1 * time.Hour).Unix()),
+		Status:   status.Started(),
+	}
+
+	if slip.MinutesWorked() != 83 {
+		t.Errorf("Expected 83 minutes worked to be returned, got %d", slip.MinutesWorked())
+	}
+}
+
+func TestToJson(t *testing.T) {
+	slip, _ := timeslip.New("Output.ToJson")
+	expectedOutput := fmt.Sprintf(`{"Project":"Output","Task":"ToJson","Description":"New Time Slip","Started":%d,"Worked":0,"Finished":0,"Modified":%d,"Status":"started","UUID":"%s"}`, slip.Started, slip.Modified, slip.UUID)
+
+	output := slip.ToJson()
+	if string(output) != expectedOutput {
 		t.Errorf("Formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
 	}
 }

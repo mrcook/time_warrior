@@ -102,10 +102,21 @@ func (s Slip) FullName() string {
 
 func (s Slip) String() string {
 	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
-	return fmt.Sprintf("%s | Started: %s | Worked: %d mins | Status: %s", s.FullName(), started, s.minutesWorked(), s.Status)
+	return fmt.Sprintf("%s | Started: %s | Worked: %d mins | Status: %s", s.FullName(), started, s.MinutesWorked(), s.Status)
 }
 
-func (s Slip) minutesWorked() int {
+func (s Slip) ToJson() []byte {
+	data, err := json.Marshal(s)
+	if err != nil {
+		return []byte{}
+	}
+	return data
+}
+
+func (s Slip) MinutesWorked() int {
+	if s.Status == status.Started() {
+		return (timeNow() - s.Modified + s.Worked) / 60
+	}
 	return s.Worked / 60
 }
 
@@ -118,7 +129,7 @@ func parseProjectName(name string) (string, string, error) {
 	case 2:
 		return names[0], names[1], nil
 	default:
-		return "", "", fmt.Errorf("Bad Project/Task name format. Expected 'ProjectName.TaskName' format")
+		return "", "", fmt.Errorf("bad Project/Task name format. Expected 'ProjectName.TaskName' format")
 	}
 }
 
