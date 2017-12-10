@@ -47,6 +47,18 @@ func (m Manager) StartNewSlip(name string) *timeslip.Slip {
 	return slip
 }
 
+func (m Manager) DeletePendingTimeSlip() error {
+	if !m.PendingTimeSlipExists() {
+		return fmt.Errorf("no pending time slip found")
+	}
+
+	if err := os.Truncate(m.pendingFile, 0); err != nil {
+		return fmt.Errorf("unable to delete pending time slip")
+	}
+
+	return nil
+}
+
 func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {

@@ -17,9 +17,8 @@ var rootCmd = &cobra.Command{
 	Use:     "time_warrior",
 	Version: "0.0.1",
 	Short:   "TimeWarrior: a CLI based time tracking tool",
-	Long: `TimeWarrior is a command line based time tracking tool for
-developers and other freelance workers who need to track
-time worked on their client and personal projects.`,
+	Long: `TimeWarrior is a command line time tracking tool for developers and freelance
+workers who need to track time worked on their client and personal projects.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())
 		if !m.PendingTimeSlipExists() {
