@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
+	"strings"
 
 	"github.com/mrcook/time_warrior/configuration"
 	"github.com/mrcook/time_warrior/timeslip"
@@ -22,6 +24,10 @@ func NewFromConfig(cfg *configuration.Config) *Manager {
 		dataDirectory: path.Join(cfg.HomeDirectory, cfg.DataDirectory),
 		pendingFile:   path.Join(cfg.HomeDirectory, cfg.DataDirectory, cfg.Pending),
 	}
+}
+
+func (m Manager) PendingSlipFilename() string {
+	return m.pendingFile
 }
 
 func (m Manager) StartNewSlip(name string) *timeslip.Slip {
@@ -96,6 +102,29 @@ func (m Manager) DeletePendingTimeSlip() error {
 	return nil
 }
 
+func (m Manager) Done(description string) (*timeslip.Slip, error) {
+	if !m.PendingTimeSlipExists() {
+		return nil, fmt.Errorf("no pending time slip found")
+	}
+
+	slip, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	slip.Done(description)
+
+	if err := m.saveCompletedSlip(slip); err != nil {
+		return slip, err
+	}
+
+	if err := os.Truncate(m.PendingSlipFilename(), 0); err != nil {
+		return slip, fmt.Errorf("pending time slip may not have been deleted")
+	}
+
+	return slip, nil
+}
+
 func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
@@ -134,4 +163,33 @@ func (m Manager) saveAsPending(slipJson []byte) error {
 	}
 
 	return nil
+}
+
+func (m Manager) saveCompletedSlip(slip *timeslip.Slip) error {
+	slipJson := slip.ToJson()
+	slipJson = append(slipJson[:], []byte("\n")...)
+
+	project := toSnakeCase(slip.Project) + ".json"
+	filename := path.Join(m.dataDirectory, project)
+
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(slipJson)
+	if err != nil {
+		return fmt.Errorf("unable to save pending JSON data: %v", err)
+	}
+
+	return nil
+}
+
+var exp = regexp.MustCompile("([a-z0-9])([A-Z0-9])")
+
+func toSnakeCase(camel string) string {
+	camel = exp.ReplaceAllString(camel, "${1}_${2}")
+
+	return strings.ToLower(camel)
 }
