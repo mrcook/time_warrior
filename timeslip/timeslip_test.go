@@ -143,6 +143,14 @@ func TestResuming(t *testing.T) {
 	}
 }
 
+func TestResumingAlreadyStartedSlip(t *testing.T) {
+	ts, _ := timeslip.New("Resume.Started")
+
+	if err := ts.Resume(); err == nil {
+		t.Errorf("Expected an error when resuming a started slip")
+	}
+}
+
 func TestFinishingAStartedTask(t *testing.T) {
 	tenMinutesInSeconds := int((10 * time.Minute).Seconds())
 	description := "Write tests for completing a started time slip"

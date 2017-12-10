@@ -55,7 +55,7 @@ func NewFromJSON(blob []byte) (*Slip, error) {
 
 func (s *Slip) Pause() error {
 	if s.Status == status.Paused() {
-		return fmt.Errorf("Slip is already paused")
+		return fmt.Errorf("slip is already paused")
 	}
 
 	s.Status = status.Paused()
@@ -72,9 +72,15 @@ func (s Slip) isPaused() bool {
 	return true
 }
 
-func (s *Slip) Resume() {
+func (s *Slip) Resume() error {
+	if s.Status == status.Started() {
+		return fmt.Errorf("slip is already in progress")
+	}
+
 	s.Status = status.Started()
 	s.Modified = timeNow()
+
+	return nil
 }
 
 func (s *Slip) Done(description string) {

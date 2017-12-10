@@ -42,9 +42,46 @@ func (m Manager) StartNewSlip(name string) *timeslip.Slip {
 		return nil
 	}
 
-	m.saveAsPending(slip.ToJson())
+	if err := m.saveAsPending(slip.ToJson()); err != nil {
+		fmt.Errorf("%v", err)
+		return nil
+	}
 
 	return slip
+}
+
+func (m Manager) PauseTimeSlip() (*timeslip.Slip, error) {
+	slip, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := slip.Pause(); err != nil {
+		return nil, err
+	}
+
+	if err := m.saveAsPending(slip.ToJson()); err != nil {
+		return nil, err
+	}
+
+	return slip, nil
+}
+
+func (m Manager) ResumeTimeSlip() (*timeslip.Slip, error) {
+	slip, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := slip.Resume(); err != nil {
+		return nil, err
+	}
+
+	if err := m.saveAsPending(slip.ToJson()); err != nil {
+		return nil, err
+	}
+
+	return slip, nil
 }
 
 func (m Manager) DeletePendingTimeSlip() error {
@@ -86,14 +123,15 @@ func (m Manager) PendingTimeSlipExists() bool {
 	return false
 }
 
-func (m Manager) saveAsPending(slipJson []byte) {
+func (m Manager) saveAsPending(slipJson []byte) error {
 	if len(slipJson) == 0 {
-		fmt.Println("Missing pending JSON data. Aborting!")
-		return
+		return fmt.Errorf("missing pending JSON data")
 	}
 
 	err := ioutil.WriteFile(m.pendingFile, slipJson, 0644)
 	if err != nil {
-		fmt.Errorf("unable to save pending JSON data: %v", err)
+		return fmt.Errorf("unable to save pending JSON data: %v", err)
 	}
+
+	return nil
 }
