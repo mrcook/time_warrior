@@ -12,7 +12,6 @@ type Config struct {
 	HomeDirectory string
 	DataDirectory string
 	Pending       string
-	Completed     string
 }
 
 // New returns a new configuration with some sane defaults
@@ -26,7 +25,6 @@ func New() *Config {
 	return &Config{
 		HomeDirectory: home,
 		DataDirectory: "time_warrior",
-		Pending:       "pending.json",
-		Completed:     "completed.json",
+		Pending:       ".pending",
 	}
 }

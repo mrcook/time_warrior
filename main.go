@@ -47,16 +47,6 @@ func setupNewInstall(config *configuration.Config) error {
 		fmt.Printf("%s created!\n", config.Pending)
 	}
 
-	completed := path.Join(dirPath, config.Completed)
-	if _, err := os.Stat(completed); err != nil {
-		f, err := os.Create(completed)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		fmt.Printf("%s created!\n", config.Completed)
-	}
-
 	return nil
 }
 
@@ -67,9 +57,6 @@ func verifyDataFilesPresent(config *configuration.Config) bool {
 		return false
 	}
 	if _, err := os.Stat(path.Join(dataPath, config.Pending)); err == nil {
-		return false
-	}
-	if _, err := os.Stat(path.Join(dataPath, config.Completed)); err == nil {
 		return false
 	}
 
