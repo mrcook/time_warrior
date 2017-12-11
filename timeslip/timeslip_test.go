@@ -285,7 +285,7 @@ func TestStringOutput(t *testing.T) {
 	slip.Modified = started
 	slip.Pause()
 
-	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 mins | Status: paused", formattedStart)
+	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused", formattedStart)
 
 	output := slip.String()
 	if output != expectedOutput {
@@ -293,39 +293,80 @@ func TestStringOutput(t *testing.T) {
 	}
 }
 
-func TestMinutesWorkedForPausedSlip(t *testing.T) {
+func TestTotalTimeWorkedForPausedSlip(t *testing.T) {
 	timeNow := time.Now()
 	started := timeNow.Add(-3 * time.Hour)
 
 	slip := timeslip.Slip{
 		Project:  "timeWarrior",
-		Task:     "MinutesWorked",
+		Task:     "TimeWorked",
 		Started:  int(started.Unix()),
 		Worked:   int((18 * time.Minute).Seconds()),
 		Modified: int(timeNow.Add(-1 * time.Hour).Unix()),
 		Status:   status.Paused(),
 	}
 
-	if slip.MinutesWorked() != 18 {
-		t.Errorf("Expected 18 minutes worked to be returned, got %d", slip.MinutesWorked())
+	if slip.TotalTimeWorked() != 1080 {
+		t.Errorf("Expected 1080 seconds worked to be returned, got %d", slip.TotalTimeWorked())
 	}
 }
 
-func TestMinutesWorkedForStartedSlip(t *testing.T) {
+func TestTotalTimeWorkedForStartedSlip(t *testing.T) {
 	timeNow := time.Now()
 	started := timeNow.Add(-3 * time.Hour)
 
 	slip := timeslip.Slip{
 		Project:  "timeWarrior",
-		Task:     "MinutesWorked",
+		Task:     "TimeWorked",
 		Started:  int(started.Unix()),
 		Worked:   int((23 * time.Minute).Seconds()),
 		Modified: int(timeNow.Add(-1 * time.Hour).Unix()),
 		Status:   status.Started(),
 	}
 
-	if slip.MinutesWorked() != 83 {
-		t.Errorf("Expected 83 minutes worked to be returned, got %d", slip.MinutesWorked())
+	if slip.TotalTimeWorked() != 4980 {
+		t.Errorf("Expected 4980 seconds worked to be returned, got %d", slip.TotalTimeWorked())
+	}
+}
+
+func TestDisplayTimeWorkedAsSeconds(t *testing.T) {
+	slip, _ := timeslip.New("Worked.Seconds")
+
+	worked := slip.DisplayTimeWorked(30)
+	if worked != "30 seconds" {
+		t.Errorf("Expected '30 seconds' to be returned, got '%s'", worked)
+	}
+}
+
+func TestDisplayTimeWorkedAsMinutes(t *testing.T) {
+	slip, _ := timeslip.New("Worked.Minutes")
+
+	// worked for 5 minutes
+	worked := slip.DisplayTimeWorked(5 * 60)
+	if worked != "5 minutes" {
+		t.Errorf("Expected '5 minutes' to be returned, got '%s'", worked)
+	}
+
+	// worked for 3 minutes and 11 seconds
+	worked = slip.DisplayTimeWorked(3*60 + 11)
+	if worked != "3m 11s" {
+		t.Errorf("Expected '3m 11s' to be returned, got '%s'", worked)
+	}
+}
+
+func TestDisplayTimeWorkedAsHours(t *testing.T) {
+	slip, _ := timeslip.New("Worked.Hours")
+
+	// worked for 3 hours
+	worked := slip.DisplayTimeWorked(3 * 60 * 60)
+	if worked != "3 hours" {
+		t.Errorf("Expected '3 hours' to be returned, got '%s'", worked)
+	}
+
+	// worked for 2 hours, and 1800 seconds (aka 30 minutes)
+	worked = slip.DisplayTimeWorked(2*60*60 + 1800)
+	if worked != "2h 30m" {
+		t.Errorf("Expected '2h 30m' to be returned, got '%s'", worked)
 	}
 }
 
