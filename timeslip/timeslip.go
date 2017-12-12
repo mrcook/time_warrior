@@ -13,15 +13,15 @@ import (
 )
 
 type Slip struct {
-	Project     string
-	Task        string
-	Description string
-	Started     int
-	Worked      int
-	Finished    int
-	Modified    int
-	Status      string
-	UUID        string
+	Project     string `json:"project"`
+	Task        string `json:"task"`
+	Description string `json:"description"`
+	Started     int    `json:"started"`
+	Worked      int    `json:"worked"`
+	Finished    int    `json:"finished"`
+	Modified    int    `json:"modified"`
+	Status      string `json:"status"`
+	UUID        string `json:"uuid"`
 }
 
 func New(name string) (*Slip, error) {

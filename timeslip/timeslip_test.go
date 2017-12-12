@@ -372,7 +372,7 @@ func TestDisplayTimeWorkedAsHours(t *testing.T) {
 
 func TestToJson(t *testing.T) {
 	slip, _ := timeslip.New("Output.ToJson")
-	expectedOutput := fmt.Sprintf(`{"Project":"Output","Task":"ToJson","Description":"New Timeslip","Started":%d,"Worked":0,"Finished":0,"Modified":%d,"Status":"started","UUID":"%s"}`, slip.Started, slip.Modified, slip.UUID)
+	expectedOutput := fmt.Sprintf(`{"project":"Output","task":"ToJson","description":"New Timeslip","started":%d,"worked":0,"finished":0,"modified":%d,"status":"started","uuid":"%s"}`, slip.Started, slip.Modified, slip.UUID)
 
 	output := slip.ToJson()
 	if string(output) != expectedOutput {
