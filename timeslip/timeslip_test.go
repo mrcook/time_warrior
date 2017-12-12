@@ -24,8 +24,8 @@ func TestNewTimeSlipDefaults(t *testing.T) {
 	if ts.Task != "New" {
 		t.Errorf("Expected Task to be 'New', got '%s'", ts.Task)
 	}
-	if ts.Description != "New Time Slip" {
-		t.Errorf("Expected default comment to be 'New Time Slip', got '%s'", ts.Description)
+	if ts.Description != "New Timeslip" {
+		t.Errorf("Expected default comment to be 'New Timeslip', got '%s'", ts.Description)
 	}
 	if ts.Started == 0 {
 		t.Error("Expected time to have been set")
@@ -153,7 +153,7 @@ func TestResumingAlreadyStartedSlip(t *testing.T) {
 
 func TestFinishingAStartedTask(t *testing.T) {
 	tenMinutesInSeconds := int((10 * time.Minute).Seconds())
-	description := "Write tests for completing a started time slip"
+	description := "Write tests for completing a started timeslip"
 
 	ts, _ := timeslip.New("Work.Done")
 	ts.Started -= tenMinutesInSeconds
@@ -193,7 +193,7 @@ func TestFinishingAPausedTask(t *testing.T) {
 	}
 	modifiedTime := halfHourAgo
 
-	ts.Done("Write tests for completing a paused time slip")
+	ts.Done("Write tests for completing a paused timeslip")
 
 	if ts.Finished > modifiedTime {
 		t.Errorf("Expected finished time '%d', to equal original modified time '%d'", ts.Finished, modifiedTime)
@@ -372,7 +372,7 @@ func TestDisplayTimeWorkedAsHours(t *testing.T) {
 
 func TestToJson(t *testing.T) {
 	slip, _ := timeslip.New("Output.ToJson")
-	expectedOutput := fmt.Sprintf(`{"Project":"Output","Task":"ToJson","Description":"New Time Slip","Started":%d,"Worked":0,"Finished":0,"Modified":%d,"Status":"started","UUID":"%s"}`, slip.Started, slip.Modified, slip.UUID)
+	expectedOutput := fmt.Sprintf(`{"Project":"Output","Task":"ToJson","Description":"New Timeslip","Started":%d,"Worked":0,"Finished":0,"Modified":%d,"Status":"started","UUID":"%s"}`, slip.Started, slip.Modified, slip.UUID)
 
 	output := slip.ToJson()
 	if string(output) != expectedOutput {

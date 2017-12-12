@@ -11,7 +11,7 @@ import (
 
 var pauseCmd = &cobra.Command{
 	Use:     "pause",
-	Short:   "Pause a started time slip",
+	Short:   "Pause a started timeslip",
 	Aliases: []string{"p"},
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())

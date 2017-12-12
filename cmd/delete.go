@@ -11,7 +11,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete an in progress time slip",
+	Short: "Delete an in progress timeslip",
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())
 		if err := m.DeletePendingTimeSlip(); err != nil {

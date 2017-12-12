@@ -34,7 +34,7 @@ func New(name string) (*Slip, error) {
 	slip := &Slip{
 		Project:     project,
 		Task:        task,
-		Description: "New Time Slip",
+		Description: "New Timeslip",
 		Started:     currentTime,
 		Modified:    currentTime,
 		Status:      status.Started(),

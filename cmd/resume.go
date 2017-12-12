@@ -11,7 +11,7 @@ import (
 
 var resumeCmd = &cobra.Command{
 	Use:     "resume",
-	Short:   "Resume a paused time slip",
+	Short:   "Resume a paused timeslip",
 	Aliases: []string{"r"},
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())

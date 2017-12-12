@@ -11,7 +11,7 @@ import (
 
 var startCmd = &cobra.Command{
 	Use:   "start PROJECT.TASK",
-	Short: "Start a new time slip",
+	Short: "Start a new timeslip",
 	Long: `Start working on a new task, providing a project, and optional task name.
 
 Only alphanumeric characters are allowed - no spaces - the project and task

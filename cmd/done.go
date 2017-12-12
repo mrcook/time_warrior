@@ -11,8 +11,8 @@ import (
 
 var doneCmd = &cobra.Command{
 	Use:     "done",
-	Short:   "Mark current time slip as completed",
-	Long:    `Mark the current time slip as done, providing a useful description.`,
+	Short:   "Mark current timeslip as completed",
+	Long:    `Mark the current timeslip as done, providing a useful description.`,
 	Aliases: []string{"d"},
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

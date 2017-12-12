@@ -38,7 +38,7 @@ func (m Manager) StartNewSlip(name string) *timeslip.Slip {
 			return nil
 		}
 
-		fmt.Println("Aborting. Pending time slip already exists!")
+		fmt.Println("Aborting. Pending timeslip already exists!")
 		return slip
 	}
 
@@ -92,11 +92,11 @@ func (m Manager) ResumeTimeSlip() (*timeslip.Slip, error) {
 
 func (m Manager) DeletePendingTimeSlip() error {
 	if !m.PendingTimeSlipExists() {
-		return fmt.Errorf("no pending time slip found")
+		return fmt.Errorf("no pending timeslip found")
 	}
 
 	if err := os.Truncate(m.pendingFile, 0); err != nil {
-		return fmt.Errorf("unable to delete pending time slip")
+		return fmt.Errorf("unable to delete pending timeslip")
 	}
 
 	return nil
@@ -104,7 +104,7 @@ func (m Manager) DeletePendingTimeSlip() error {
 
 func (m Manager) Done(description string) (*timeslip.Slip, error) {
 	if !m.PendingTimeSlipExists() {
-		return nil, fmt.Errorf("no pending time slip found")
+		return nil, fmt.Errorf("no pending timeslip found")
 	}
 
 	slip, err := m.PendingTimeSlip()
@@ -119,7 +119,7 @@ func (m Manager) Done(description string) (*timeslip.Slip, error) {
 	}
 
 	if err := os.Truncate(m.PendingSlipFilename(), 0); err != nil {
-		return slip, fmt.Errorf("pending time slip may not have been deleted")
+		return slip, fmt.Errorf("pending timeslip may not have been deleted")
 	}
 
 	return slip, nil
