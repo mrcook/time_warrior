@@ -13,6 +13,8 @@ var pauseCmd = &cobra.Command{
 	Use:     "pause",
 	Short:   "Pause a started timeslip",
 	Aliases: []string{"p"},
+	Args:    cobra.NoArgs,
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())
 		slip, err := m.PauseTimeSlip()

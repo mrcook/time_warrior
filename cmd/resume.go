@@ -13,6 +13,8 @@ var resumeCmd = &cobra.Command{
 	Use:     "resume",
 	Short:   "Resume a paused timeslip",
 	Aliases: []string{"r"},
+	Args:    cobra.NoArgs,
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())
 		slip, err := m.ResumeTimeSlip()

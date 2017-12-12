@@ -14,7 +14,7 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "time_warrior",
+	Use:     "tw",
 	Version: "0.0.1",
 	Short:   "TimeWarrior: a CLI based time tracking tool",
 	Long: `TimeWarrior is a command line time tracking tool for developers and freelance
