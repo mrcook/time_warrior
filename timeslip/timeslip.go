@@ -115,36 +115,11 @@ func (s Slip) TotalTimeWorked() int {
 
 func (s Slip) String() string {
 	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
-	timeWorked := s.DisplayTimeWorked(s.TotalTimeWorked())
 
-	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, timeWorked, s.Status)
-}
+	st := SlipTime{}
+	st.FromSeconds(s.TotalTimeWorked())
 
-func (s Slip) DisplayTimeWorked(seconds int) string {
-	var output string
-
-	if seconds <= int(time.Duration(60*time.Second).Seconds()) {
-		output = fmt.Sprintf("%d seconds", seconds)
-	} else if seconds < int(time.Duration(60*time.Minute).Seconds()) {
-		min := seconds / 60
-		sec := seconds % 60
-		if sec == 0 {
-			output = fmt.Sprintf("%d minutes", min)
-		} else {
-			output = fmt.Sprintf("%dm %ds", min, sec)
-		}
-	} else {
-		minutes := seconds / 60
-		hour := minutes / 60
-		min := minutes % 60
-		if min == 0 {
-			output = fmt.Sprintf("%d hours", hour)
-		} else {
-			output = fmt.Sprintf("%dh %dm", hour, min)
-		}
-	}
-
-	return output
+	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, st.String(), s.Status)
 }
 
 func (s Slip) ToJson() []byte {

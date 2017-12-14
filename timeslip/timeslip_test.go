@@ -329,47 +329,6 @@ func TestTotalTimeWorkedForStartedSlip(t *testing.T) {
 	}
 }
 
-func TestDisplayTimeWorkedAsSeconds(t *testing.T) {
-	slip, _ := timeslip.New("Worked.Seconds")
-
-	worked := slip.DisplayTimeWorked(30)
-	if worked != "30 seconds" {
-		t.Errorf("Expected '30 seconds' to be returned, got '%s'", worked)
-	}
-}
-
-func TestDisplayTimeWorkedAsMinutes(t *testing.T) {
-	slip, _ := timeslip.New("Worked.Minutes")
-
-	// worked for 5 minutes
-	worked := slip.DisplayTimeWorked(5 * 60)
-	if worked != "5 minutes" {
-		t.Errorf("Expected '5 minutes' to be returned, got '%s'", worked)
-	}
-
-	// worked for 3 minutes and 11 seconds
-	worked = slip.DisplayTimeWorked(3*60 + 11)
-	if worked != "3m 11s" {
-		t.Errorf("Expected '3m 11s' to be returned, got '%s'", worked)
-	}
-}
-
-func TestDisplayTimeWorkedAsHours(t *testing.T) {
-	slip, _ := timeslip.New("Worked.Hours")
-
-	// worked for 3 hours
-	worked := slip.DisplayTimeWorked(3 * 60 * 60)
-	if worked != "3 hours" {
-		t.Errorf("Expected '3 hours' to be returned, got '%s'", worked)
-	}
-
-	// worked for 2 hours, and 1800 seconds (aka 30 minutes)
-	worked = slip.DisplayTimeWorked(2*60*60 + 1800)
-	if worked != "2h 30m" {
-		t.Errorf("Expected '2h 30m' to be returned, got '%s'", worked)
-	}
-}
-
 func TestToJson(t *testing.T) {
 	slip, _ := timeslip.New("Output.ToJson")
 	expectedOutput := fmt.Sprintf(`{"project":"Output","task":"ToJson","description":"New Timeslip","started":%d,"worked":0,"finished":0,"modified":%d,"status":"started","uuid":"%s"}`, slip.Started, slip.Modified, slip.UUID)
