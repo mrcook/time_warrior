@@ -28,7 +28,7 @@ workers who need to track time worked on their client and personal projects.`,
 
 		slip, err := m.PendingTimeSlip()
 		if err != nil {
-			fmt.Errorf("%v", err)
+			fmt.Println(err)
 			return
 		}
 

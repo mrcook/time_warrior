@@ -24,7 +24,7 @@ var doneCmd = &cobra.Command{
 			fmt.Println(slip)
 		}
 		if err != nil {
-			fmt.Errorf("%v", err)
+			fmt.Println(err)
 		}
 	},
 }

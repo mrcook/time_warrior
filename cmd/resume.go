@@ -19,7 +19,7 @@ var resumeCmd = &cobra.Command{
 		m := manager.NewFromConfig(initializeConfig())
 		slip, err := m.ResumeTimeSlip()
 		if err != nil {
-			fmt.Errorf("%v", err)
+			fmt.Println(err)
 		} else {
 			fmt.Println(slip)
 		}

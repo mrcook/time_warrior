@@ -19,7 +19,7 @@ var pauseCmd = &cobra.Command{
 		m := manager.NewFromConfig(initializeConfig())
 		slip, err := m.PauseTimeSlip()
 		if err != nil {
-			fmt.Errorf("%v", err)
+			fmt.Println(err)
 		} else {
 			fmt.Println(slip)
 		}

@@ -34,7 +34,7 @@ func (m Manager) StartNewSlip(name string) *timeslip.Slip {
 	if m.PendingTimeSlipExists() {
 		slip, err := m.PendingTimeSlip()
 		if err != nil {
-			fmt.Errorf("%v", err)
+			fmt.Println(err)
 			return nil
 		}
 
@@ -49,7 +49,7 @@ func (m Manager) StartNewSlip(name string) *timeslip.Slip {
 	}
 
 	if err := m.saveAsPending(slip.ToJson()); err != nil {
-		fmt.Errorf("%v", err)
+		fmt.Println(err)
 		return nil
 	}
 
@@ -142,7 +142,7 @@ func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 func (m Manager) PendingTimeSlipExists() bool {
 	file, err := os.Stat(m.pendingFile)
 	if err != nil {
-		fmt.Errorf("%v", err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
