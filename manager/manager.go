@@ -125,6 +125,28 @@ func (m Manager) Done(description string) (*timeslip.Slip, error) {
 	return slip, nil
 }
 
+func (m Manager) Adjust(adjustment string) (*timeslip.Slip, error) {
+	if !m.PendingTimeSlipExists() {
+		return nil, fmt.Errorf("no pending timeslip found")
+	}
+
+	slip, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	err = slip.Adjust(adjustment)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := m.saveAsPending(slip.ToJson()); err != nil {
+		return slip, fmt.Errorf("timeslip may not have been saved: %v", err)
+	}
+
+	return slip, nil
+}
+
 func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
