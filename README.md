@@ -57,6 +57,31 @@ The details will again be printed on the command line:
 A new project data file will be created using the project _name_ you gave (`MyProject`) and saved as `$HOME/time_warrior/my_project.json`. Each timeslip created for this project will be save on a separate line in this file.
 
 
+### Adjust Timeslip
+
+If you forget to `start`, `pause`, or `resume` a timeslip, then you can use the `adjust` command to add/subtract a time duration to the `worked` time on a **pending** timeslip.
+
+Adjustments are made using a simple duration string in the format of `10m` - a decimal number followed by a single time unit character (no spaces). Allowed units are `h`, `m`, and `s`, for hours, minutes, and seconds, respectively.
+
+Note: before you can adjust the timeslip you will first need to pause it: `tw pause`.
+
+Examples of adding to the Worked time:
+
+    $ tw adjust 72m
+    $ tw adjust 2h
+    $ tw adjust 130s
+    $ tw adjust 30m
+    $ tw adjust 720s
+
+To subtract time you need to specify the `-n` (negative) flag. Examples:
+
+    $ tw adjust -n 5m
+    $ tw adjust -n 1h
+    $ tw adjust -n 150s
+
+One you have adjusted your timeslip you can resume working on it, or mark it as done.
+
+
 ### Delete Timeslip
 
     $ tw delete
