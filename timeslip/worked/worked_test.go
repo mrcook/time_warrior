@@ -1,13 +1,13 @@
-package timeslip_test
+package worked_test
 
 import (
 	"testing"
 
-	"github.com/mrcook/time_warrior/timeslip"
+	"github.com/mrcook/time_warrior/timeslip/worked"
 )
 
 func TestFromHours(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromHours(4)
 
@@ -17,7 +17,7 @@ func TestFromHours(t *testing.T) {
 }
 
 func TestFromMinutes(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromMinutes(199) // 2h 19m
 
@@ -27,7 +27,7 @@ func TestFromMinutes(t *testing.T) {
 }
 
 func TestFromSeconds(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromSeconds(7538) // 2h 5m 38s
 
@@ -37,7 +37,7 @@ func TestFromSeconds(t *testing.T) {
 }
 
 func TestFromInvalidString(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	err := st.FromString("3h 52m 18s")
 	if err.Error() != "invalid string, expected one time unit, got 3" {
@@ -51,7 +51,7 @@ func TestFromInvalidString(t *testing.T) {
 }
 
 func TestFromHourString(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	err := st.FromString("7h")
 	if err != nil {
@@ -71,7 +71,7 @@ func TestFromHourString(t *testing.T) {
 }
 
 func TestFromMinuteString(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	err := st.FromString("74m")
 	if err != nil {
@@ -91,7 +91,7 @@ func TestFromMinuteString(t *testing.T) {
 }
 
 func TestFromSecondString(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	err := st.FromString("3727s")
 	if err != nil {
@@ -111,7 +111,7 @@ func TestFromSecondString(t *testing.T) {
 }
 
 func TestStringHours(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromSeconds(10800)
 	if st.String() != "3 hours" {
@@ -125,7 +125,7 @@ func TestStringHours(t *testing.T) {
 }
 
 func TestStringMinutes(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromSeconds(240)
 	if st.String() != "4 minutes" {
@@ -139,7 +139,7 @@ func TestStringMinutes(t *testing.T) {
 }
 
 func TestStringSeconds(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromSeconds(55)
 	if st.String() != "55 seconds" {
@@ -153,7 +153,7 @@ func TestStringSeconds(t *testing.T) {
 }
 
 func TestStringHoursMinutes(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromSeconds(7200 + 240)
 	if st.String() != "2h 4m" {
@@ -167,7 +167,7 @@ func TestStringHoursMinutes(t *testing.T) {
 }
 
 func TestStringMinutesSeconds(t *testing.T) {
-	st := timeslip.SlipTime{}
+	st := worked.Time{}
 
 	st.FromSeconds(360 + 13)
 	if st.String() != "6m 13s" {

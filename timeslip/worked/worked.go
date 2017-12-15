@@ -1,4 +1,4 @@
-package timeslip
+package worked
 
 import (
 	"fmt"
@@ -6,22 +6,22 @@ import (
 	"strings"
 )
 
-type SlipTime struct {
+type Time struct {
 	Hours   int
 	Minutes int
 	Seconds int
 }
 
-func (t *SlipTime) FromHours(hours int) {
+func (t *Time) FromHours(hours int) {
 	t.Hours = hours
 }
 
-func (t *SlipTime) FromMinutes(minutes int) {
+func (t *Time) FromMinutes(minutes int) {
 	t.Hours = minutes / 60
 	t.Minutes = minutes % 60
 }
 
-func (t *SlipTime) FromSeconds(seconds int) {
+func (t *Time) FromSeconds(seconds int) {
 	t.Hours = seconds / 3600
 
 	remainder := seconds % 3600
@@ -30,7 +30,7 @@ func (t *SlipTime) FromSeconds(seconds int) {
 	t.Seconds = remainder % 60
 }
 
-func (t *SlipTime) FromString(adjustment string) error {
+func (t *Time) FromString(adjustment string) error {
 	adjustment = strings.TrimSpace(adjustment)
 
 	units := strings.Split(adjustment, " ")
@@ -79,7 +79,7 @@ func (t *SlipTime) FromString(adjustment string) error {
 	return nil
 }
 
-func (t SlipTime) String() string {
+func (t Time) String() string {
 	if t.Hours != 0 && t.Minutes != 0 {
 		return fmt.Sprintf("%dh %dm", t.Hours, t.Minutes)
 	} else if t.Minutes != 0 && t.Seconds != 0 {

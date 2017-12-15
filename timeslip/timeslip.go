@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mrcook/time_warrior/timeslip/status"
+	"github.com/mrcook/time_warrior/timeslip/worked"
 )
 
 type Slip struct {
@@ -116,10 +117,10 @@ func (s Slip) TotalTimeWorked() int {
 func (s Slip) String() string {
 	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
 
-	st := SlipTime{}
-	st.FromSeconds(s.TotalTimeWorked())
+	w := worked.Time{}
+	w.FromSeconds(s.TotalTimeWorked())
 
-	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, st.String(), s.Status)
+	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, w.String(), s.Status)
 }
 
 func (s Slip) ToJson() []byte {
