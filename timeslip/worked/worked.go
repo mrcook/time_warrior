@@ -94,3 +94,20 @@ func (t Time) String() string {
 
 	return fmt.Sprintf("%d seconds", t.Seconds)
 }
+
+func (t Time) ToSeconds() int {
+	hours := t.Hours * 60 * 60
+	minutes := t.Minutes * 60
+
+	return hours + minutes + t.Seconds
+}
+
+func (t *Time) Add(nu *Time) {
+	seconds := t.ToSeconds() + nu.ToSeconds()
+	t.FromSeconds(seconds)
+}
+
+func (t *Time) Subtract(nu *Time) {
+	seconds := t.ToSeconds() - nu.ToSeconds()
+	t.FromSeconds(seconds)
+}

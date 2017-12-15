@@ -338,3 +338,131 @@ func TestToJson(t *testing.T) {
 		t.Errorf("Formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
 	}
 }
+
+func TestAdjustStartedTimeslip(t *testing.T) {
+	slip, _ := timeslip.New("Adjust.Started")
+
+	err := slip.Adjust("10m")
+	if err == nil {
+		t.Error("only paused timeslips can be changed")
+	}
+}
+
+func TestAdjustWorked(t *testing.T) {
+	modified := int(time.Now().Unix()) - 2*60 // 2 minutes ago
+	started := modified - 18*60               // 20 minutes ago
+	worked := 5 * 60                          // 5 minutes
+
+	slip := timeslip.Slip{
+		Project:  "Adjust",
+		Task:     "Worked",
+		Started:  started,
+		Worked:   worked,
+		Modified: modified,
+		Status:   status.Paused(),
+	}
+
+	// 10 minutes
+	adjustment := 10 * 60
+
+	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+
+	// 5 + 10 = 15 minutes
+	if slip.Worked != 900 {
+		t.Errorf("Expected worked time to have been incremented to 900 seconds, got %d", slip.Worked)
+	}
+
+	if slip.Started != started {
+		t.Errorf("Expected started time to remain unchanged at %d, got %d", started, slip.Started)
+	}
+
+	if slip.Modified != modified {
+		t.Errorf("Expected modified time to remain unchanged at %d, got %d", modified, slip.Modified)
+	}
+}
+
+func TestAdjustWorkedAndStarted(t *testing.T) {
+	started := int(time.Now().Unix()) - 5*60 // 5 minutes ago
+	worked := 3 * 60                         // 3 minutes
+	modified := started + worked             // 2 minutes ago
+
+	slip := timeslip.Slip{
+		Project:  "AdjustWorked",
+		Task:     "AndStarted",
+		Started:  started,
+		Worked:   worked,
+		Modified: modified,
+		Status:   status.Paused(),
+	}
+
+	// 12 minutes, which would make modified 10 minutes in the future!
+	adjustment := 12 * 60
+
+	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+
+	// 3 + 12 = 15 minutes
+	if slip.Worked != 900 {
+		t.Errorf("Expected worked time to have been incremented to 900 seconds, got %d", slip.Worked)
+	}
+
+	if slip.Modified != modified {
+		t.Errorf("Expected modified time to remain unchanged at %d, got %d", modified, slip.Modified)
+	}
+
+	if slip.Started != started-adjustment {
+		t.Errorf("Expected started time to have been pushed back to %d, got %d", started-adjustment, slip.Started)
+	}
+}
+
+func TestAdjustWorkedAndModified(t *testing.T) {
+	started := int(time.Now().Unix()) - 20*60 // 20 minutes ago
+	worked := 2 * 60                          // 2 minutes
+	modified := started + worked              // 18 minutes ago
+
+	slip := timeslip.Slip{
+		Project:  "AdjustWorked",
+		Task:     "AndModified",
+		Started:  started,
+		Worked:   worked,
+		Modified: modified,
+		Status:   status.Paused(),
+	}
+
+	// 4 minutes, which would make modified 14 minutes ago
+	adjustment := 4 * 60
+
+	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+
+	// 2 + 4 = 6 minutes
+	if slip.Worked != 360 {
+		t.Errorf("Expected worked time to have been incremented to 360 seconds, got %d", slip.Worked)
+	}
+
+	if slip.Started != started {
+		t.Errorf("Expected started time to remain unchanged at %d, got %d", started, slip.Started)
+	}
+
+	if slip.Modified != modified+adjustment {
+		t.Errorf("Expected modified time to have been moved forward to %d, got %d", modified+adjustment, slip.Modified)
+	}
+}
+
+func TestAdjustNegative(t *testing.T) {
+	slip, _ := timeslip.New("AdjustPaused.AddNegativeValue")
+	slip.Pause()
+
+	started := slip.Started
+	modified := slip.Modified
+	worked := slip.Worked
+
+	adjustment := -61 // 1m 1s
+	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+
+	if slip.Worked != worked-61 {
+		t.Errorf("Expected worked time to have been decremented to %d seconds, got %d", worked-61, slip.Worked)
+	}
+
+	if slip.Started != started || slip.Modified != modified {
+		t.Errorf("Expected started/modified to remain unchanged, got %d/%d", slip.Started, slip.Modified)
+	}
+}

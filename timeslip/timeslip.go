@@ -100,6 +100,36 @@ func (s *Slip) Done(description string) {
 	s.Status = status.Completed()
 }
 
+// Adjust the current worked time from the given string value.
+// Note: the modified time should be moved forward with the
+// adjustment, unless that would put it into the future, in
+// which case the started time should be pushed back.
+func (s *Slip) Adjust(adjustment string) error {
+	if s.Status != status.Paused() {
+		return fmt.Errorf("only paused timeslips can be changed")
+	}
+
+	a := worked.Time{}
+	a.FromString(adjustment)
+
+	w := worked.Time{}
+	w.FromSeconds(s.Worked)
+
+	w.Add(&a)
+	s.Worked = w.ToSeconds()
+
+	now := timeNow()
+	workedTime := s.Started + s.Worked
+
+	if workedTime > s.Modified && workedTime <= now {
+		s.Modified = workedTime
+	} else if workedTime > now {
+		s.Started = s.Modified - s.Worked
+	}
+
+	return nil
+}
+
 func (s Slip) FullName() string {
 	if s.Task == "" {
 		return s.Project

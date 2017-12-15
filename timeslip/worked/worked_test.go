@@ -179,3 +179,61 @@ func TestStringMinutesSeconds(t *testing.T) {
 		t.Errorf("Expected '-12m -45s' to be returned, got '%s'", st.String())
 	}
 }
+
+func TestToSeconds(t *testing.T) {
+	st := worked.Time{}
+
+	// 7865 (2h 11m 5s)
+	st.FromSeconds((2 * 3600) + (11 * 60) + 5)
+	if st.ToSeconds() != 7865 {
+		t.Errorf("Expected 7865 to be returned, got %d", st.ToSeconds())
+	}
+
+	// -6258 (1h 44m 18s)
+	st.FromSeconds(-(3600 + (44 * 60) + 18))
+	if st.ToSeconds() != -6258 {
+		t.Errorf("Expected -6258 to be returned, got %d", st.ToSeconds())
+	}
+}
+
+func TestAdd(t *testing.T) {
+	// 3600 + 1140 + 34 = 4774
+	st := worked.Time{Hours: 1, Minutes: 19, Seconds: 34}
+
+	// 240 + 29 = 269
+	nu := worked.Time{Hours: 0, Minutes: 4, Seconds: 29}
+
+	st.Add(&nu)
+
+	if st.ToSeconds() != 5043 {
+		t.Errorf("Expected 5043 to be returned, got %d", st.ToSeconds())
+	}
+}
+
+func TestAddNegative(t *testing.T) {
+	// 3600 + 120 + 2 = 3722
+	st := worked.Time{Hours: 1, Minutes: 2, Seconds: 2}
+
+	// -120 - 13 = -133
+	nu := worked.Time{Hours: 0, Minutes: -2, Seconds: -13}
+
+	st.Add(&nu)
+
+	if st.ToSeconds() != 3589 {
+		t.Errorf("Expected 3589 to be returned, got %d", st.ToSeconds())
+	}
+}
+
+func TestSubtract(t *testing.T) {
+	// 7200 + 240 + 3 = 7443
+	st := worked.Time{Hours: 2, Minutes: 4, Seconds: 3}
+
+	// 900 + 59 = 959
+	nu := worked.Time{Hours: 0, Minutes: 15, Seconds: 59}
+
+	st.Subtract(&nu)
+
+	if st.ToSeconds() != 6484 {
+		t.Errorf("Expected 6484 to be returned, got %d", st.ToSeconds())
+	}
+}
