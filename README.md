@@ -111,9 +111,14 @@ If you make a mistake when starting a new timeslip, you can delete it easily wit
 
 ## Installation
 
-    go get -u -v github.com/mrcook/time_warrior/...
+    $ go get -u -v github.com/mrcook/time_warrior/...
 
-It's recommend to have your `$GOPATH/bin` directory exported in your shell so you can then just type `tw` to get started.
+To install the app after manually cloning the repository you must first `cd` into the `tw` directory:
+
+    $ cd $GOPATH/src/github.com/mrcook/time_warrior/tw
+    $ go install
+
+It is recommend to have your `$GOPATH/bin` directory exported in your shell so you can then just type `tw` to get started.
 
 
 ## Contributing
