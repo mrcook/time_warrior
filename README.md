@@ -16,7 +16,7 @@ You can view the help by typing `tw -h`, or by prefixing each sub command like s
 
 This command will start a new _pending_ timeslip with a _project_ name of `MyProject` and a _task_ name of `SetupTask`. This timeslip will be saved in the `$HOME/time_warrior/.pending` file, and the details printed to the command line:
 
-    $ MyProject.SetupTask | Started: 2017-12-11 13:35 | Worked: 0 seconds | Status: started
+    MyProject.SetupTask | Started: 2017-12-11 13:35 | Worked: 0 seconds | Status: started
 
 There are several points to take note of regarding starting new timeslips:  
 
@@ -32,7 +32,7 @@ There are several points to take note of regarding starting new timeslips:
 
 As expected, this will pause a currently running timeslip, and print the details on the command line:
 
-    $ MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: paused
+    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: paused
 
 
 ### Resume Timeslip
@@ -41,7 +41,7 @@ As expected, this will pause a currently running timeslip, and print the details
 
 As expected, this will resume a paused timeslip, and print the details on the command line:
 
-    $ MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: started
+    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: started
 
 
 ### Done! Complete Timeslip
@@ -52,7 +52,7 @@ When you've finished your current task you can mark the slip as done, giving a s
 
 The details will again be printed on the command line:
 
-    $ MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 9m 23s | Status: completed
+    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 9m 23s | Status: completed
 
 A new project data file will be created using the project _name_ you gave (`MyProject`) and saved as `$HOME/time_warrior/my_project.json`. Each timeslip created for this project will be save on a separate line in this file.
 
@@ -63,23 +63,30 @@ If you forget to `start`, `pause`, or `resume` a timeslip, then you can use the 
 
 Adjustments are made using a simple duration string in the format of `10m` - a decimal number followed by a single time unit character (no spaces). Allowed units are `h`, `m`, and `s`, for hours, minutes, and seconds, respectively.
 
-Note: before you can adjust the timeslip you will first need to pause it: `tw pause`.
-
 Examples of adding to the Worked time:
 
-    $ tw adjust 72m
     $ tw adjust 2h
-    $ tw adjust 130s
     $ tw adjust 30m
+    $ tw adjust 45s
+
+    $ tw adjust 72m
     $ tw adjust 720s
 
 To subtract time you need to specify the `-n` (negative) flag. Examples:
 
-    $ tw adjust -n 5m
     $ tw adjust -n 1h
-    $ tw adjust -n 150s
+    $ tw adjust -n 20m
+    $ tw adjust -n 90s
 
 One you have adjusted your timeslip you can resume working on it, or mark it as done.
+
+Here is a full example of adding `1 hour` and `15 minutes` to a running timeslip:
+
+    $ tw
+    MyProject.SetupTask | Started: 2017-12-11 18:01 | Worked: 15m | Status: started
+
+    $ tw adjust 75m
+    MyProject.SetupTask | Started: 2017-12-11 18:01 | Worked: 1h 30m | Status: started
 
 
 ### Delete Timeslip

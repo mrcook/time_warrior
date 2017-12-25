@@ -12,6 +12,7 @@ import (
 
 	"github.com/mrcook/time_warrior/configuration"
 	"github.com/mrcook/time_warrior/timeslip"
+	"github.com/mrcook/time_warrior/timeslip/status"
 )
 
 type Manager struct {
@@ -125,6 +126,8 @@ func (m Manager) Done(description string) (*timeslip.Slip, error) {
 	return slip, nil
 }
 
+// Adjust a pending timeslip +/- a given amount
+// Only paused timeslips should be adjusted
 func (m Manager) Adjust(adjustment string) (*timeslip.Slip, error) {
 	if !m.PendingTimeSlipExists() {
 		return nil, fmt.Errorf("no pending timeslip found")
@@ -135,9 +138,21 @@ func (m Manager) Adjust(adjustment string) (*timeslip.Slip, error) {
 		return nil, err
 	}
 
+	// Running timeslips must be paused
+	running := false
+	if slip.Status == status.Started() {
+		running = true
+		slip.Pause()
+	}
+
 	err = slip.Adjust(adjustment)
 	if err != nil {
 		return nil, err
+	}
+
+	// Resume timeslip if it was previously running
+	if running {
+		slip.Resume()
 	}
 
 	if err := m.saveAsPending(slip.ToJson()); err != nil {
