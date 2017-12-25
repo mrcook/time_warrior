@@ -3,6 +3,12 @@
 ## HEAD
 
 
+## 1.1.0 (2017-12-25)
+
+- `adjust` command will now automatically pause/resume a running timeslip.
+- Bugfix: `adjust` command does not allow the `worked` time to be less than `0`.
+
+
 ## 1.0.0 (2017-12-15)
 
 First release of my TimeWarrior time tracker tool, ported from Ruby to Go.
