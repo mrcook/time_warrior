@@ -118,6 +118,11 @@ func (s *Slip) Adjust(adjustment string) error {
 	w.Add(&a)
 	s.Worked = w.ToSeconds()
 
+	if s.Worked < 0 {
+		s.Worked = 0
+		return nil
+	}
+
 	now := timeNow()
 	workedTime := s.Started + s.Worked
 
