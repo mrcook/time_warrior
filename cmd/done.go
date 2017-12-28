@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/mrcook/time_warrior/timeslip"
@@ -49,12 +48,12 @@ func done(description string) (*timeslip.Slip, error) {
 
 	slip.Done(description)
 
-	if err := m.SaveCompletedSlip(slip); err != nil {
+	if err := m.SaveCompleted(slip); err != nil {
 		return slip, err
 	}
 
-	if err := os.Truncate(m.PendingSlipFilename(), 0); err != nil {
-		return slip, fmt.Errorf("pending timeslip may not have been deleted")
+	if err := m.DeletePending(); err != nil {
+		return slip, err
 	}
 
 	return slip, nil

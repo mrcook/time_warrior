@@ -43,7 +43,7 @@ func pauseTimeSlip() (*timeslip.Slip, error) {
 		return nil, err
 	}
 
-	if err := m.SaveAsPending(slip.ToJson()); err != nil {
+	if err := m.SavePending(slip.ToJson()); err != nil {
 		return nil, err
 	}
 

@@ -78,7 +78,7 @@ To subtract time you need to specify the `-n` (negative) flag. Examples:
     $ tw adjust -n 20m
     $ tw adjust -n 90s
 
-One you have adjusted your timeslip you can resume working on it, or mark it as done.
+Once you have adjusted your timeslip you can resume working on it, or mark it as done.
 
 Here is a full example of adding `1 hour` and `15 minutes` to a running timeslip:
 
@@ -91,18 +91,18 @@ Here is a full example of adding `1 hour` and `15 minutes` to a running timeslip
 
 ### Delete Timeslip
 
+**Caution! This action can not be undone!**
+
     $ tw delete
 
 If you make a mistake when starting a new timeslip, you can delete it easily with this command.
-
-**Caution! This action can not be undone!**
 
 
 ### NOTES
 
 * Running the program (typing just `tw`) while you have a _pending_ timeslip will show the current details for the that slip.
 * `Worked` time format is displayed in several styles: `hours`, `minutes`, `seconds`, along with two abbreviated combinations: `1h 23m` and `10m 14s`.
-* All commands have a _short_ alias (except `delete`), as follows:
+* Some commands have a _short_ alias:
   - `s`, `start`
   - `p`, `pause`
   - `r`, `resume`
@@ -118,7 +118,7 @@ To install the app after manually cloning the repository you must first `cd` int
     $ cd $GOPATH/src/github.com/mrcook/time_warrior/tw
     $ go install
 
-It is recommend to have your `$GOPATH/bin` directory exported in your shell so you can then just type `tw` to get started.
+If you've added the `$GOPATH/bin` directory to your `$PATH`, you can then just type `tw` to get started.
 
 
 ## Contributing

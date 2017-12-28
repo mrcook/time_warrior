@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/spf13/cobra"
@@ -35,8 +34,8 @@ func deletePendingTimeSlip() error {
 		return fmt.Errorf("no pending timeslip found")
 	}
 
-	if err := os.Truncate(m.PendingSlipFilename(), 0); err != nil {
-		return fmt.Errorf("unable to delete pending timeslip")
+	if err := m.DeletePending(); err != nil {
+		return err
 	}
 
 	return nil

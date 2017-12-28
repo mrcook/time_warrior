@@ -26,10 +26,6 @@ func NewFromConfig(cfg *configuration.Config) *Manager {
 	}
 }
 
-func (m Manager) PendingSlipFilename() string {
-	return m.pendingFile
-}
-
 func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
@@ -57,20 +53,7 @@ func (m Manager) PendingTimeSlipExists() bool {
 	return false
 }
 
-func (m Manager) SaveAsPending(slipJson []byte) error {
-	if len(slipJson) == 0 {
-		return fmt.Errorf("missing pending JSON data")
-	}
-
-	err := ioutil.WriteFile(m.pendingFile, slipJson, 0644)
-	if err != nil {
-		return fmt.Errorf("unable to save pending JSON data: %v", err)
-	}
-
-	return nil
-}
-
-func (m Manager) SaveCompletedSlip(slip *timeslip.Slip) error {
+func (m Manager) SaveCompleted(slip *timeslip.Slip) error {
 	slipJson := slip.ToJson()
 	slipJson = append(slipJson[:], []byte("\n")...)
 
@@ -88,6 +71,26 @@ func (m Manager) SaveCompletedSlip(slip *timeslip.Slip) error {
 		return fmt.Errorf("unable to save pending JSON data: %v", err)
 	}
 
+	return nil
+}
+
+func (m Manager) SavePending(slipJson []byte) error {
+	if len(slipJson) == 0 {
+		return fmt.Errorf("missing pending JSON data")
+	}
+
+	err := ioutil.WriteFile(m.pendingFile, slipJson, 0644)
+	if err != nil {
+		return fmt.Errorf("unable to save pending JSON data: %v", err)
+	}
+
+	return nil
+}
+
+func (m Manager) DeletePending() error {
+	if err := os.Truncate(m.pendingFile, 0); err != nil {
+		return fmt.Errorf("pending timeslip may not have been deleted")
+	}
 	return nil
 }
 

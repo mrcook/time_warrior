@@ -85,7 +85,7 @@ func adjust(adjustment string) (*timeslip.Slip, error) {
 		slip.Resume()
 	}
 
-	if err := m.SaveAsPending(slip.ToJson()); err != nil {
+	if err := m.SavePending(slip.ToJson()); err != nil {
 		return slip, fmt.Errorf("timeslip may not have been saved: %v", err)
 	}
 
