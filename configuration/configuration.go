@@ -8,7 +8,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-// Config for the application
+// Config for the application files/folders
 type Config struct {
 	HomeDirectory string
 	DataDirectory string

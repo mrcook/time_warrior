@@ -8,31 +8,37 @@ import (
 	"strings"
 )
 
-type Time struct {
+// WorkTime represents time in Hours, Minutes, Seconds
+// to make worked time adjustments easier.
+type WorkTime struct {
 	Hours   int
 	Minutes int
 	Seconds int
 }
 
-func (t *Time) FromHours(hours int) {
-	t.Hours = hours
+// FromHours sets the numbers of hours
+func (w *WorkTime) FromHours(hours int) {
+	w.Hours = hours
 }
 
-func (t *Time) FromMinutes(minutes int) {
-	t.Hours = minutes / 60
-	t.Minutes = minutes % 60
+// FromMinutes sets the numbers of minutes
+func (w *WorkTime) FromMinutes(minutes int) {
+	w.Hours = minutes / 60
+	w.Minutes = minutes % 60
 }
 
-func (t *Time) FromSeconds(seconds int) {
-	t.Hours = seconds / 3600
+// FromSeconds sets the numbers of seconds
+func (w *WorkTime) FromSeconds(seconds int) {
+	w.Hours = seconds / 3600
 
 	remainder := seconds % 3600
 
-	t.Minutes = remainder / 60
-	t.Seconds = remainder % 60
+	w.Minutes = remainder / 60
+	w.Seconds = remainder % 60
 }
 
-func (t *Time) FromString(adjustment string) error {
+// FromString parses an adjust command string, e.g. `-75m`.
+func (w *WorkTime) FromString(adjustment string) error {
 	adjustment = strings.TrimSpace(adjustment)
 
 	units := strings.Split(adjustment, " ")
@@ -55,61 +61,65 @@ func (t *Time) FromString(adjustment string) error {
 		if err != nil {
 			return fmt.Errorf("unable to process input")
 		}
-		t.FromHours(h)
+		w.FromHours(h)
 	case "m":
 		m, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("unable to process input")
 		}
-		t.FromMinutes(m)
+		w.FromMinutes(m)
 	case "s":
 		s, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("unable to process input")
 		}
-		t.FromSeconds(s)
+		w.FromSeconds(s)
 	default:
 		return fmt.Errorf("unable to process input")
 	}
 
 	if negative {
-		t.Hours = -t.Hours
-		t.Minutes = -t.Minutes
-		t.Seconds = -t.Seconds
+		w.Hours = -w.Hours
+		w.Minutes = -w.Minutes
+		w.Seconds = -w.Seconds
 	}
 
 	return nil
 }
 
-func (t Time) String() string {
-	if t.Hours != 0 && t.Minutes != 0 {
-		return fmt.Sprintf("%dh %dm", t.Hours, t.Minutes)
-	} else if t.Minutes != 0 && t.Seconds != 0 {
-		return fmt.Sprintf("%dm %ds", t.Minutes, t.Seconds)
+// String returns the worked time as a string, e.g. `1h 10m`.
+func (w WorkTime) String() string {
+	if w.Hours != 0 && w.Minutes != 0 {
+		return fmt.Sprintf("%dh %dm", w.Hours, w.Minutes)
+	} else if w.Minutes != 0 && w.Seconds != 0 {
+		return fmt.Sprintf("%dm %ds", w.Minutes, w.Seconds)
 	}
 
-	if t.Hours != 0 {
-		return fmt.Sprintf("%d hours", t.Hours)
-	} else if t.Minutes != 0 {
-		return fmt.Sprintf("%d minutes", t.Minutes)
+	if w.Hours != 0 {
+		return fmt.Sprintf("%d hours", w.Hours)
+	} else if w.Minutes != 0 {
+		return fmt.Sprintf("%d minutes", w.Minutes)
 	}
 
-	return fmt.Sprintf("%d seconds", t.Seconds)
+	return fmt.Sprintf("%d seconds", w.Seconds)
 }
 
-func (t Time) ToSeconds() int {
-	hours := t.Hours * 60 * 60
-	minutes := t.Minutes * 60
+// ToSeconds returns the worked time in seconds.
+func (w WorkTime) ToSeconds() int {
+	hours := w.Hours * 60 * 60
+	minutes := w.Minutes * 60
 
-	return hours + minutes + t.Seconds
+	return hours + minutes + w.Seconds
 }
 
-func (t *Time) Add(nu *Time) {
-	seconds := t.ToSeconds() + nu.ToSeconds()
-	t.FromSeconds(seconds)
+// Add one worked time to another.
+func (w *WorkTime) Add(nu *WorkTime) {
+	seconds := w.ToSeconds() + nu.ToSeconds()
+	w.FromSeconds(seconds)
 }
 
-func (t *Time) Subtract(nu *Time) {
-	seconds := t.ToSeconds() - nu.ToSeconds()
-	t.FromSeconds(seconds)
+// Subtract one worked time from another.
+func (w *WorkTime) Subtract(nu *WorkTime) {
+	seconds := w.ToSeconds() - nu.ToSeconds()
+	w.FromSeconds(seconds)
 }

@@ -108,10 +108,10 @@ func (s *Slip) Adjust(adjustment string) error {
 		return fmt.Errorf("only paused timeslips can be changed")
 	}
 
-	a := worked.Time{}
+	a := worked.WorkTime{}
 	a.FromString(adjustment)
 
-	w := worked.Time{}
+	w := worked.WorkTime{}
 	w.FromSeconds(s.Worked)
 
 	w.Add(&a)
@@ -151,7 +151,7 @@ func (s Slip) TotalTimeWorked() int {
 func (s Slip) String() string {
 	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
 
-	w := worked.Time{}
+	w := worked.WorkTime{}
 	w.FromSeconds(s.TotalTimeWorked())
 
 	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, w.String(), s.Status)

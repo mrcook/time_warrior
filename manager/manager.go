@@ -18,6 +18,7 @@ type Manager struct {
 	pendingFile   string
 }
 
+// NewFromConfig returns a new manager from a config.
 func NewFromConfig(cfg *configuration.Config) *Manager {
 	return &Manager{
 		dataDirectory: path.Join(cfg.HomeDirectory, cfg.DataDirectory),
@@ -25,6 +26,7 @@ func NewFromConfig(cfg *configuration.Config) *Manager {
 	}
 }
 
+// PendingTimeSlip reads a timeslip from the pending file.
 func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
@@ -39,6 +41,7 @@ func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	return slip, nil
 }
 
+// PendingTimeSlipExists returns true if the pending file contains a current timeslip.
 func (m Manager) PendingTimeSlipExists() bool {
 	file, err := os.Stat(m.pendingFile)
 	if err != nil {
@@ -52,6 +55,7 @@ func (m Manager) PendingTimeSlipExists() bool {
 	return false
 }
 
+// SaveCompleted saves a timeslip to the project JSON file.
 func (m Manager) SaveCompleted(slip *timeslip.Slip) error {
 	slipJson := slip.ToJson()
 	slipJson = append(slipJson[:], []byte("\n")...)
@@ -73,6 +77,7 @@ func (m Manager) SaveCompleted(slip *timeslip.Slip) error {
 	return nil
 }
 
+// SavePending saves a timeslip to the pending file.
 func (m Manager) SavePending(slipJson []byte) error {
 	if len(slipJson) == 0 {
 		return fmt.Errorf("missing pending JSON data")
@@ -86,6 +91,7 @@ func (m Manager) SavePending(slipJson []byte) error {
 	return nil
 }
 
+// DeletePending deletes any timeslip found in the pending file.
 func (m Manager) DeletePending() error {
 	if err := os.Truncate(m.pendingFile, 0); err != nil {
 		return fmt.Errorf("pending timeslip may not have been deleted")
