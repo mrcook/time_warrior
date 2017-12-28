@@ -12,6 +12,8 @@ import (
 	"github.com/mrcook/time_warrior/timeslip/worked"
 )
 
+// Slip represents a timeslip.
+// Note: timestamps are stored as Unix time.
 type Slip struct {
 	Project     string `json:"project"`
 	Task        string `json:"task"`
@@ -24,6 +26,7 @@ type Slip struct {
 	UUID        string `json:"uuid"`
 }
 
+// New returns a new "started" timeslip.
 func New(name string) (*Slip, error) {
 	currentTime := int(time.Now().Unix())
 	project, task, err := parseProjectName(name)
@@ -44,6 +47,8 @@ func New(name string) (*Slip, error) {
 	return slip, nil
 }
 
+// NewFromJSON parses a JSON timeslip string.
+// Used for parsing timeslips read from the pending file.
 func NewFromJSON(blob []byte) (*Slip, error) {
 	slip := &Slip{}
 	err := json.Unmarshal(blob, slip)
@@ -53,6 +58,7 @@ func NewFromJSON(blob []byte) (*Slip, error) {
 	return slip, nil
 }
 
+// Pause a started timeslip.
 func (s *Slip) Pause() error {
 	if s.Status == status.Paused() {
 		return fmt.Errorf("slip is already paused")
@@ -72,6 +78,7 @@ func (s Slip) isPaused() bool {
 	return true
 }
 
+// Resume a paused timeslip.
 func (s *Slip) Resume() error {
 	if s.Status == status.Started() {
 		return fmt.Errorf("slip is already in progress")
@@ -83,6 +90,7 @@ func (s *Slip) Resume() error {
 	return nil
 }
 
+// Done marks a timeslip as completed.
 func (s *Slip) Done(description string) {
 	currentTime := timeNow()
 
@@ -134,6 +142,7 @@ func (s *Slip) Adjust(adjustment string) error {
 	return nil
 }
 
+// FullName returns the `Project.Task` name.
 func (s Slip) FullName() string {
 	if s.Task == "" {
 		return s.Project
@@ -141,6 +150,9 @@ func (s Slip) FullName() string {
 	return s.Project + "." + s.Task
 }
 
+// TotalTimeWorked returns the total time worked on a timeslip.
+// If a timeslip is currently started, the worked time is adjusted based
+// on the modified and current time.
 func (s Slip) TotalTimeWorked() int {
 	if s.Status == status.Started() {
 		return timeNow() - s.Modified + s.Worked
@@ -148,6 +160,7 @@ func (s Slip) TotalTimeWorked() int {
 	return s.Worked
 }
 
+// String returns a CLI friendly representation of the timeslip.
 func (s Slip) String() string {
 	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
 
@@ -157,6 +170,7 @@ func (s Slip) String() string {
 	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, w.String(), s.Status)
 }
 
+// ToJson converts a timeslip to a JSON string.
 func (s Slip) ToJson() []byte {
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -178,6 +192,7 @@ func parseProjectName(name string) (string, string, error) {
 	}
 }
 
+// timeNow returns a Unix timestamp.
 func timeNow() int {
 	return int(time.Now().Unix())
 }

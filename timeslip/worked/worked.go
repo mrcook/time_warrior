@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// WorkTime represents time in Hours, Minutes, Seconds
-// to make worked time adjustments easier.
+// WorkTime represents time in Hours, Minutes, Seconds to make working
+// with the timeslips UNIX representation of time easier.
 type WorkTime struct {
 	Hours   int
 	Minutes int
