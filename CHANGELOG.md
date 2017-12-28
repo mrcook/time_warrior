@@ -13,7 +13,7 @@
 
 First release of my TimeWarrior time tracker tool, ported from Ruby to Go.
 
-The following commands are avalable:
+The following commands are available:
 
 - `start`:  Start a new timeslip
 - `pause`:  Pause a started timeslip

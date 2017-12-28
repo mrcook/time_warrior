@@ -1,5 +1,3 @@
-// Copyright (c) 2017 Michael R. Cook
-
 package timeslip_test
 
 import (

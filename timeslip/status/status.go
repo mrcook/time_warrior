@@ -1,5 +1,4 @@
-// Copyright (c) 2017 Michael R. Cook
-
+// Package status contains the basic states of a timeslip.
 package status
 
 func Started() string {

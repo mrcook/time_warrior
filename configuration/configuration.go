@@ -1,3 +1,4 @@
+// Package configuration provides some default directory and file names.
 package configuration
 
 import (

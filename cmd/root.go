@@ -1,5 +1,4 @@
-// Copyright (c) 2017 Michael R. Cook
-
+// Package cmd contains all the CLI commands for managing timeslips.
 package cmd
 
 import (
@@ -12,7 +11,7 @@ import (
 	"github.com/mrcook/time_warrior/manager"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any sub commands
 var rootCmd = &cobra.Command{
 	Use:     "tw",
 	Version: "1.1.0",

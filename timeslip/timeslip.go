@@ -1,5 +1,4 @@
-// Copyright (c) 2017 Michael R. Cook
-
+// Package timeslip creates a new timeslip, along with managing its state.
 package timeslip
 
 import (

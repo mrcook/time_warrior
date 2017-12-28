@@ -1,3 +1,5 @@
+// Package worked provides helper time functions for calculating and
+// displaying the time worked on a timeslip.
 package worked
 
 import (

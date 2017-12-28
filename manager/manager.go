@@ -1,5 +1,4 @@
-// Copyright (c) 2017 Michael R. Cook
-
+// Package manage provides timeslip file management.
 package manager
 
 import (
