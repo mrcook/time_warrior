@@ -2,6 +2,8 @@
 
 ## HEAD
 
+- Add some basic code documentation.
+
 
 ## 1.1.0 (2017-12-25)
 

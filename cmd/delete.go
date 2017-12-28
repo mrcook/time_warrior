@@ -32,9 +32,6 @@ func deletePendingTimeSlip() error {
 		return fmt.Errorf("no pending timeslip found")
 	}
 
-	if err := m.DeletePending(); err != nil {
-		return err
-	}
-
-	return nil
+	err := m.DeletePending()
+	return err
 }
