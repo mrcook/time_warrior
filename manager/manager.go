@@ -1,4 +1,4 @@
-// Package manage provides timeslip file management.
+// Package manager provides timeslip file management.
 package manager
 
 import (
@@ -13,21 +13,21 @@ import (
 	"github.com/mrcook/time_warrior/timeslip"
 )
 
-type Manager struct {
+type manager struct {
 	dataDirectory string
 	pendingFile   string
 }
 
 // NewFromConfig returns a new manager from a config.
-func NewFromConfig(cfg *configuration.Config) *Manager {
-	return &Manager{
+func NewFromConfig(cfg *configuration.Config) *manager {
+	return &manager{
 		dataDirectory: path.Join(cfg.HomeDirectory, cfg.DataDirectory),
 		pendingFile:   path.Join(cfg.HomeDirectory, cfg.DataDirectory, cfg.Pending),
 	}
 }
 
 // PendingTimeSlip reads a timeslip from the pending file.
-func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
+func (m manager) PendingTimeSlip() (*timeslip.Slip, error) {
 	record, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
 }
 
 // PendingTimeSlipExists returns true if the pending file contains a current timeslip.
-func (m Manager) PendingTimeSlipExists() bool {
+func (m manager) PendingTimeSlipExists() bool {
 	file, err := os.Stat(m.pendingFile)
 	if err != nil {
 		fmt.Println(err)
@@ -56,7 +56,7 @@ func (m Manager) PendingTimeSlipExists() bool {
 }
 
 // SaveCompleted saves a timeslip to the project JSON file.
-func (m Manager) SaveCompleted(slip *timeslip.Slip) error {
+func (m manager) SaveCompleted(slip *timeslip.Slip) error {
 	slipJson := slip.ToJson()
 	slipJson = append(slipJson[:], []byte("\n")...)
 
@@ -78,7 +78,7 @@ func (m Manager) SaveCompleted(slip *timeslip.Slip) error {
 }
 
 // SavePending saves a timeslip to the pending file.
-func (m Manager) SavePending(slipJson []byte) error {
+func (m manager) SavePending(slipJson []byte) error {
 	if len(slipJson) == 0 {
 		return fmt.Errorf("missing pending JSON data")
 	}
@@ -92,7 +92,7 @@ func (m Manager) SavePending(slipJson []byte) error {
 }
 
 // DeletePending deletes any timeslip found in the pending file.
-func (m Manager) DeletePending() error {
+func (m manager) DeletePending() error {
 	if err := os.Truncate(m.pendingFile, 0); err != nil {
 		return fmt.Errorf("pending timeslip may not have been deleted")
 	}
