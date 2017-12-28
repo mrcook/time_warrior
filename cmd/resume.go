@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/mrcook/time_warrior/manager"
+	"github.com/mrcook/time_warrior/timeslip"
 	"github.com/spf13/cobra"
 )
 
@@ -16,8 +17,7 @@ var resumeCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		m := manager.NewFromConfig(initializeConfig())
-		slip, err := m.ResumeTimeSlip()
+		slip, err := resumeTimeSlip()
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -28,4 +28,23 @@ var resumeCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(resumeCmd)
+}
+
+func resumeTimeSlip() (*timeslip.Slip, error) {
+	m := manager.NewFromConfig(initializeConfig())
+
+	slip, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := slip.Resume(); err != nil {
+		return nil, err
+	}
+
+	if err := m.SaveAsPending(slip.ToJson()); err != nil {
+		return nil, err
+	}
+
+	return slip, nil
 }

@@ -12,7 +12,6 @@ import (
 
 	"github.com/mrcook/time_warrior/configuration"
 	"github.com/mrcook/time_warrior/timeslip"
-	"github.com/mrcook/time_warrior/timeslip/status"
 )
 
 type Manager struct {
@@ -29,137 +28,6 @@ func NewFromConfig(cfg *configuration.Config) *Manager {
 
 func (m Manager) PendingSlipFilename() string {
 	return m.pendingFile
-}
-
-func (m Manager) StartNewSlip(name string) *timeslip.Slip {
-	if m.PendingTimeSlipExists() {
-		slip, err := m.PendingTimeSlip()
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-
-		fmt.Println("Aborting. Pending timeslip already exists!")
-		return slip
-	}
-
-	slip, err := timeslip.New(name)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-
-	if err := m.saveAsPending(slip.ToJson()); err != nil {
-		fmt.Println(err)
-		return nil
-	}
-
-	return slip
-}
-
-func (m Manager) PauseTimeSlip() (*timeslip.Slip, error) {
-	slip, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := slip.Pause(); err != nil {
-		return nil, err
-	}
-
-	if err := m.saveAsPending(slip.ToJson()); err != nil {
-		return nil, err
-	}
-
-	return slip, nil
-}
-
-func (m Manager) ResumeTimeSlip() (*timeslip.Slip, error) {
-	slip, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := slip.Resume(); err != nil {
-		return nil, err
-	}
-
-	if err := m.saveAsPending(slip.ToJson()); err != nil {
-		return nil, err
-	}
-
-	return slip, nil
-}
-
-func (m Manager) DeletePendingTimeSlip() error {
-	if !m.PendingTimeSlipExists() {
-		return fmt.Errorf("no pending timeslip found")
-	}
-
-	if err := os.Truncate(m.pendingFile, 0); err != nil {
-		return fmt.Errorf("unable to delete pending timeslip")
-	}
-
-	return nil
-}
-
-func (m Manager) Done(description string) (*timeslip.Slip, error) {
-	if !m.PendingTimeSlipExists() {
-		return nil, fmt.Errorf("no pending timeslip found")
-	}
-
-	slip, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
-	}
-
-	slip.Done(description)
-
-	if err := m.saveCompletedSlip(slip); err != nil {
-		return slip, err
-	}
-
-	if err := os.Truncate(m.PendingSlipFilename(), 0); err != nil {
-		return slip, fmt.Errorf("pending timeslip may not have been deleted")
-	}
-
-	return slip, nil
-}
-
-// Adjust a pending timeslip +/- a given amount
-// Only paused timeslips should be adjusted
-func (m Manager) Adjust(adjustment string) (*timeslip.Slip, error) {
-	if !m.PendingTimeSlipExists() {
-		return nil, fmt.Errorf("no pending timeslip found")
-	}
-
-	slip, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
-	}
-
-	// Running timeslips must be paused
-	running := false
-	if slip.Status == status.Started() {
-		running = true
-		slip.Pause()
-	}
-
-	err = slip.Adjust(adjustment)
-	if err != nil {
-		return nil, err
-	}
-
-	// Resume timeslip if it was previously running
-	if running {
-		slip.Resume()
-	}
-
-	if err := m.saveAsPending(slip.ToJson()); err != nil {
-		return slip, fmt.Errorf("timeslip may not have been saved: %v", err)
-	}
-
-	return slip, nil
 }
 
 func (m Manager) PendingTimeSlip() (*timeslip.Slip, error) {
@@ -189,7 +57,7 @@ func (m Manager) PendingTimeSlipExists() bool {
 	return false
 }
 
-func (m Manager) saveAsPending(slipJson []byte) error {
+func (m Manager) SaveAsPending(slipJson []byte) error {
 	if len(slipJson) == 0 {
 		return fmt.Errorf("missing pending JSON data")
 	}
@@ -202,7 +70,7 @@ func (m Manager) saveAsPending(slipJson []byte) error {
 	return nil
 }
 
-func (m Manager) saveCompletedSlip(slip *timeslip.Slip) error {
+func (m Manager) SaveCompletedSlip(slip *timeslip.Slip) error {
 	slipJson := slip.ToJson()
 	slipJson = append(slipJson[:], []byte("\n")...)
 

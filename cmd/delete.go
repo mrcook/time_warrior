@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/spf13/cobra"
@@ -15,8 +16,7 @@ var deleteCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		m := manager.NewFromConfig(initializeConfig())
-		if err := m.DeletePendingTimeSlip(); err != nil {
+		if err := deletePendingTimeSlip(); err != nil {
 			fmt.Println(err)
 		} else {
 			fmt.Println("Deleted!")
@@ -26,4 +26,18 @@ var deleteCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
+}
+
+func deletePendingTimeSlip() error {
+	m := manager.NewFromConfig(initializeConfig())
+
+	if !m.PendingTimeSlipExists() {
+		return fmt.Errorf("no pending timeslip found")
+	}
+
+	if err := os.Truncate(m.PendingSlipFilename(), 0); err != nil {
+		return fmt.Errorf("unable to delete pending timeslip")
+	}
+
+	return nil
 }

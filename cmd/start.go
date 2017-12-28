@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/mrcook/time_warrior/manager"
+	"github.com/mrcook/time_warrior/timeslip"
 	"github.com/spf13/cobra"
 )
 
@@ -20,8 +21,13 @@ name must be separated by a period. Example: MyProject.StartTask`,
 	Args:    cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		m := manager.NewFromConfig(initializeConfig())
-		if slip := m.StartNewSlip(args[0]); slip != nil {
+		slip, err := startNewSlip(args[0])
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if slip != nil {
 			fmt.Println(slip)
 		}
 	},
@@ -29,4 +35,27 @@ name must be separated by a period. Example: MyProject.StartTask`,
 
 func init() {
 	rootCmd.AddCommand(startCmd)
+}
+
+func startNewSlip(name string) (*timeslip.Slip, error) {
+	m := manager.NewFromConfig(initializeConfig())
+
+	if m.PendingTimeSlipExists() {
+		slip, err := m.PendingTimeSlip()
+		if err == nil {
+			err = fmt.Errorf("pending timeslip already exists")
+		}
+		return slip, err
+	}
+
+	slip, err := timeslip.New(name)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := m.SaveAsPending(slip.ToJson()); err != nil {
+		return nil, err
+	}
+
+	return slip, nil
 }
