@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var negative bool
+var adjustNegative bool
 
 var adjustCmd = &cobra.Command{
 	Use:   "adjust DURATION",
@@ -28,7 +28,7 @@ To subtract a value, specify the -n (negative) flag.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var duration string
-		if negative == true {
+		if adjustNegative == true {
 			duration = "-" + args[0]
 		} else {
 			duration = args[0]
@@ -47,7 +47,7 @@ To subtract a value, specify the -n (negative) flag.`,
 }
 
 func init() {
-	adjustCmd.Flags().BoolVarP(&negative, "negative", "n", false, "use negative time duration")
+	adjustCmd.Flags().BoolVarP(&adjustNegative, "negative", "n", false, "use negative time duration")
 
 	rootCmd.AddCommand(adjustCmd)
 }
