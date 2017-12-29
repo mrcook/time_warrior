@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
-
 	"github.com/mrcook/time_warrior/configuration"
 	"github.com/mrcook/time_warrior/manager"
+	"github.com/mrcook/time_warrior/timeslip"
+	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any sub commands
@@ -25,7 +25,13 @@ workers who need to track time worked on their client and personal projects.`,
 			return
 		}
 
-		slip, err := m.PendingTimeSlip()
+		slipJSON, err := m.PendingTimeSlip()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		slip, err := timeslip.NewFromJSON(slipJSON)
 		if err != nil {
 			fmt.Println(err)
 			return

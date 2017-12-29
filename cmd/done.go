@@ -39,14 +39,19 @@ func done(description string) (*timeslip.Slip, error) {
 		return nil, fmt.Errorf("no pending timeslip found")
 	}
 
-	slip, err := m.PendingTimeSlip()
+	slipJSON, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	slip, err := timeslip.NewFromJSON(slipJSON)
 	if err != nil {
 		return nil, err
 	}
 
 	slip.Done(description)
 
-	if err := m.SaveCompleted(slip); err != nil {
+	if err := m.SaveCompleted(slip.Project, slip.ToJson()); err != nil {
 		return slip, err
 	}
 

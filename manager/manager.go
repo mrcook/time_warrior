@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/mrcook/time_warrior/configuration"
-	"github.com/mrcook/time_warrior/timeslip"
 )
 
 type manager struct {
@@ -27,17 +26,11 @@ func NewFromConfig(cfg *configuration.Config) *manager {
 }
 
 // PendingTimeSlip reads a timeslip from the pending file.
-func (m manager) PendingTimeSlip() (*timeslip.Slip, error) {
-	record, err := ioutil.ReadFile(m.pendingFile)
+func (m manager) PendingTimeSlip() ([]byte, error) {
+	slip, err := ioutil.ReadFile(m.pendingFile)
 	if err != nil {
 		return nil, err
 	}
-
-	slip, err := timeslip.NewFromJSON(record)
-	if err != nil {
-		return nil, err
-	}
-
 	return slip, nil
 }
 
@@ -56,12 +49,10 @@ func (m manager) PendingTimeSlipExists() bool {
 }
 
 // SaveCompleted saves a timeslip to the project JSON file.
-func (m manager) SaveCompleted(slip *timeslip.Slip) error {
-	slipJson := slip.ToJson()
-	slipJson = append(slipJson[:], []byte("\n")...)
+func (m manager) SaveCompleted(project string, slip []byte) error {
+	slip = append(slip[:], []byte("\n")...)
 
-	project := toSnakeCase(slip.Project) + ".json"
-	filename := path.Join(m.dataDirectory, project)
+	filename := path.Join(m.dataDirectory, toSnakeCase(project)+".json")
 
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
@@ -69,23 +60,23 @@ func (m manager) SaveCompleted(slip *timeslip.Slip) error {
 	}
 	defer file.Close()
 
-	_, err = file.Write(slipJson)
+	_, err = file.Write(slip)
 	if err != nil {
-		return fmt.Errorf("unable to save pending JSON data: %v", err)
+		return fmt.Errorf("unable to save completed timeslip: %v", err)
 	}
 
 	return nil
 }
 
 // SavePending saves a timeslip to the pending file.
-func (m manager) SavePending(slipJson []byte) error {
-	if len(slipJson) == 0 {
+func (m manager) SavePending(slip []byte) error {
+	if len(slip) == 0 {
 		return fmt.Errorf("missing pending JSON data")
 	}
 
-	err := ioutil.WriteFile(m.pendingFile, slipJson, 0644)
+	err := ioutil.WriteFile(m.pendingFile, slip, 0644)
 	if err != nil {
-		return fmt.Errorf("unable to save pending JSON data: %v", err)
+		return fmt.Errorf("unable to save pending timeslip: %v", err)
 	}
 
 	return nil

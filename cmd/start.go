@@ -39,10 +39,16 @@ func startNewSlip(name string) (*timeslip.Slip, error) {
 	m := manager.NewFromConfig(initializeConfig())
 
 	if m.PendingTimeSlipExists() {
-		slip, err := m.PendingTimeSlip()
+		slipJSON, err := m.PendingTimeSlip()
 		if err == nil {
-			err = fmt.Errorf("pending timeslip already exists")
+			return nil, fmt.Errorf("pending timeslip already exists")
 		}
+
+		slip, err := timeslip.NewFromJSON(slipJSON)
+		if err != nil {
+			return nil, err
+		}
+
 		return slip, err
 	}
 

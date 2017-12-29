@@ -31,7 +31,12 @@ func init() {
 func resumeTimeSlip() (*timeslip.Slip, error) {
 	m := manager.NewFromConfig(initializeConfig())
 
-	slip, err := m.PendingTimeSlip()
+	slipJSON, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	slip, err := timeslip.NewFromJSON(slipJSON)
 	if err != nil {
 		return nil, err
 	}

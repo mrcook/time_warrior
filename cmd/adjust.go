@@ -61,7 +61,12 @@ func adjust(adjustment string) (*timeslip.Slip, error) {
 		return nil, fmt.Errorf("no pending timeslip found")
 	}
 
-	slip, err := m.PendingTimeSlip()
+	slipJSON, err := m.PendingTimeSlip()
+	if err != nil {
+		return nil, err
+	}
+
+	slip, err := timeslip.NewFromJSON(slipJSON)
 	if err != nil {
 		return nil, err
 	}
