@@ -40,13 +40,23 @@ func TestFromInvalidString(t *testing.T) {
 	st := worked.WorkTime{}
 
 	err := st.FromString("3h 52m 18s")
-	if err.Error() != "invalid string, expected one time unit, got 3" {
+	if err.Error() != "invalid time unit, should not contain spaces" {
 		t.Error("Expected an invalid string error")
 	}
 
 	err = st.FromString("3h52m")
 	if err.Error() != "unable to process input" {
-		t.Error("Expected an unprocessible string error")
+		t.Error("Expected an unable to process error")
+	}
+
+	err = st.FromString("5")
+	if err.Error() != "invalid time unit, got '5'" {
+		t.Errorf("Expected invalid time unit error, got '%s'", err)
+	}
+
+	err = st.FromString("-9")
+	if err.Error() != "invalid time unit, got '9'" {
+		t.Errorf("Expected invalid time unit error, got '%s'", err)
 	}
 }
 

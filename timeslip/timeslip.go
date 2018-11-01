@@ -117,7 +117,9 @@ func (s *Slip) Adjust(adjustment string) error {
 	}
 
 	a := worked.WorkTime{}
-	a.FromString(adjustment)
+	if err := a.FromString(adjustment); err != nil {
+		return err
+	}
 
 	w := worked.WorkTime{}
 	w.FromSeconds(s.Worked)

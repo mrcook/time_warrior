@@ -41,17 +41,21 @@ func (w *WorkTime) FromSeconds(seconds int) {
 func (w *WorkTime) FromString(adjustment string) error {
 	adjustment = strings.TrimSpace(adjustment)
 
-	units := strings.Split(adjustment, " ")
-	if len(units) != 1 {
-		return fmt.Errorf("invalid string, expected one time unit, got %d", len(units))
+	if strings.Contains(adjustment, " ") {
+		return fmt.Errorf("invalid time unit, should not contain spaces")
 	}
 
 	unit := adjustment[len(adjustment)-1:]
 	value := adjustment[:len(adjustment)-1]
 
-	negative := value[0] == '-'
+	if len(unit) != 1 || !strings.ContainsAny(unit, "hms") {
+		return fmt.Errorf("invalid time unit, got '%s'", unit)
+	}
 
-	if value[0] == '-' || value[0] == '+' {
+	hasNegative := value[0] == '-'
+	hasPositive := value[0] == '+'
+
+	if hasNegative || hasPositive {
 		value = adjustment[1 : len(adjustment)-1]
 	}
 
@@ -78,7 +82,7 @@ func (w *WorkTime) FromString(adjustment string) error {
 		return fmt.Errorf("unable to process input")
 	}
 
-	if negative {
+	if hasNegative {
 		w.Hours = -w.Hours
 		w.Minutes = -w.Minutes
 		w.Seconds = -w.Seconds

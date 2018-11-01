@@ -482,3 +482,23 @@ func TestAdjustNegative(t *testing.T) {
 		t.Errorf("Expected modified time to be unchanged, was: %d, now: %d", modified, slip.Modified)
 	}
 }
+
+func TestAdjustWithMissingTimeUnit(t *testing.T) {
+	slip, _ := timeslip.New("AdjustPaused.MissingTimeUnit")
+	slip.Pause()
+
+	worked := slip.Worked
+
+	err := slip.Adjust("-1")
+	if err == nil {
+		t.Fatalf("Expected an error, non returned")
+	}
+
+	if err.Error() != "invalid time unit, got '1'" {
+		t.Errorf("Expected invalid time format error, got '%s'", err)
+	}
+
+	if slip.Worked != worked {
+		t.Errorf("Expected worked time to be unchanged, was %d, now %d", worked, slip.Worked)
+	}
+}
