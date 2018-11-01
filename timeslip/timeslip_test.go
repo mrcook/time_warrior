@@ -449,18 +449,36 @@ func TestAdjustNegative(t *testing.T) {
 	slip, _ := timeslip.New("AdjustPaused.AddNegativeValue")
 	slip.Pause()
 
+	adjustment := -61 // 1m 1s
+
+	slip.Worked = 0
+	err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+	if err != nil {
+		t.Fatalf("Unexepcted error: %s", err)
+	}
+
+	if slip.Worked < 0 {
+		t.Errorf("Unexpected worked time, can not be a negative number, got %d", slip.Worked)
+	}
+
+	slip.Worked = 120
+	slip.Started -= slip.Worked
+
 	started := slip.Started
 	modified := slip.Modified
 	worked := slip.Worked
 
-	adjustment := -61 // 1m 1s
 	slip.Adjust(fmt.Sprintf("%ds", adjustment))
 
 	if slip.Worked != worked-61 {
 		t.Errorf("Expected worked time to have been decremented to %d seconds, got %d", worked-61, slip.Worked)
 	}
 
-	if slip.Started != started || slip.Modified != modified {
-		t.Errorf("Expected started/modified to remain unchanged, got %d/%d", slip.Started, slip.Modified)
+	if slip.Started != started {
+		t.Errorf("Expected started time to be unchanged, was: %d, now: %d", started, slip.Started)
+	}
+
+	if slip.Modified != modified {
+		t.Errorf("Expected modified time to be unchanged, was: %d, now: %d", modified, slip.Modified)
 	}
 }
