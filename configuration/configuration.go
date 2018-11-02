@@ -4,15 +4,16 @@ package configuration
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/mitchellh/go-homedir"
 )
 
 // Config for the application files/folders
 type Config struct {
-	HomeDirectory string
-	DataDirectory string
-	Pending       string
+	homeDirectory   string
+	dataFolder      string
+	pendingFilename string
 }
 
 // New returns a new configuration with some sane defaults
@@ -24,8 +25,28 @@ func New() *Config {
 	}
 
 	return &Config{
-		HomeDirectory: home,
-		DataDirectory: "time_warrior",
-		Pending:       ".pending",
+		homeDirectory:   home,
+		dataFolder:      "time_warrior",
+		pendingFilename: ".pending",
 	}
+}
+
+func (c Config) DataDirectoryPath() string {
+	return path.Join(c.homeDirectory, c.dataFolder)
+}
+
+func (c Config) PendingFilePath() string {
+	return path.Join(c.DataDirectoryPath(), c.pendingFilename)
+}
+
+func (c Config) VerifyDataFilesPresent() bool {
+	if _, err := os.Stat(c.DataDirectoryPath()); err != nil {
+		return false
+	}
+
+	if _, err := os.Stat(c.PendingFilePath()); err != nil {
+		return false
+	}
+
+	return true
 }

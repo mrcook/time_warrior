@@ -20,8 +20,8 @@ type manager struct {
 // NewFromConfig returns a new manager from a config.
 func NewFromConfig(cfg *configuration.Config) *manager {
 	return &manager{
-		dataDirectory: path.Join(cfg.HomeDirectory, cfg.DataDirectory),
-		pendingFile:   path.Join(cfg.HomeDirectory, cfg.DataDirectory, cfg.Pending),
+		dataDirectory: cfg.DataDirectoryPath(),
+		pendingFile:   cfg.PendingFilePath(),
 	}
 }
 

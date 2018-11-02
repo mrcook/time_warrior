@@ -4,60 +4,45 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/mrcook/time_warrior/cmd"
 	"github.com/mrcook/time_warrior/configuration"
 )
 
-var config *configuration.Config
-
-func init() {
-	config = configuration.New()
-
+func main() {
+	config := configuration.New()
 	if err := setupNewInstall(config); err != nil {
 		fmt.Printf("%v", err)
 		os.Exit(1)
 	}
-
-	if verifyDataFilesPresent(config) {
-		fmt.Println("One or more data files are missing! Re-run the app.")
-		os.Exit(1)
-	}
-}
-
-func main() {
 	cmd.Execute()
 }
 
 func setupNewInstall(config *configuration.Config) error {
-	dirPath := path.Join(config.HomeDirectory, config.DataDirectory)
-	if err := os.Mkdir(dirPath, 0755); os.IsNotExist(err) {
+	if config.VerifyDataFilesPresent() {
+		return nil
+	}
+
+	dataFolder := config.DataDirectoryPath()
+	if err := os.Mkdir(dataFolder, 0755); err == nil {
+		fmt.Printf("data folder was created at %s\n", dataFolder)
+	} else if !os.IsExist(err) {
 		return err
 	}
 
-	pending := path.Join(dirPath, config.Pending)
+	pending := config.PendingFilePath()
 	if _, err := os.Stat(pending); err != nil {
-		f, err := os.Create(pending)
-		if err != nil {
-			return err
+		f, createErr := os.Create(pending)
+		if createErr != nil {
+			return createErr
 		}
 		defer f.Close()
-		fmt.Printf("%s created!\n", config.Pending)
+		fmt.Println("pending file was created!")
+	}
+
+	if !config.VerifyDataFilesPresent() {
+		return fmt.Errorf("one or more data files are missing! Re-run the app")
 	}
 
 	return nil
-}
-
-func verifyDataFilesPresent(config *configuration.Config) bool {
-	dataPath := path.Join(config.HomeDirectory, config.DataDirectory)
-
-	if _, err := os.Stat(dataPath); err == nil {
-		return false
-	}
-	if _, err := os.Stat(path.Join(dataPath, config.Pending)); err == nil {
-		return false
-	}
-
-	return true
 }
