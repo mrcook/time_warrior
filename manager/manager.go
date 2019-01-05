@@ -90,7 +90,7 @@ func (m manager) DeletePending() error {
 	return nil
 }
 
-var exp = regexp.MustCompile("([a-z0-9])([A-Z0-9])")
+var exp = regexp.MustCompile("([a-z0-9]+)([A-Z])")
 
 func toSnakeCase(camel string) string {
 	camel = exp.ReplaceAllString(camel, "${1}_${2}")
