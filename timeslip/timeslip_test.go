@@ -260,16 +260,16 @@ func TestNewFromJSON(t *testing.T) {
 	}
 }
 
-func TestFullName(t *testing.T) {
-	slip := timeslip.Slip{Project: "timeWarrior", Task: "FullName"}
+func TestName(t *testing.T) {
+	slip := timeslip.Slip{Project: "TimeWarrior", Task: "Name"}
 
-	if slip.FullName() != "timeWarrior.FullName" {
-		t.Errorf("Expected Project and Task names joined with a perdiod, got: %s", slip.FullName())
+	if slip.Name() != "TimeWarrior.Name" {
+		t.Errorf("Expected Project and Task names joined with a perdiod, got: %s", slip.Name())
 	}
 
 	slip.Task = ""
-	if slip.FullName() != "timeWarrior" {
-		t.Errorf("Expected just the project name, got: %s", slip.FullName())
+	if slip.Name() != "TimeWarrior" {
+		t.Errorf("Expected just the project name, got: %s", slip.Name())
 	}
 }
 

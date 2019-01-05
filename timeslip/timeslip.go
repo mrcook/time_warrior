@@ -144,8 +144,8 @@ func (s *Slip) Adjust(adjustment string) error {
 	return nil
 }
 
-// FullName returns the `Project.Task` name.
-func (s Slip) FullName() string {
+// Name returns the full timeslip name as `Project.Task`, or just `Project` if no task is present.
+func (s Slip) Name() string {
 	if s.Task == "" {
 		return s.Project
 	}
@@ -169,7 +169,7 @@ func (s Slip) String() string {
 	w := worked.WorkTime{}
 	w.FromSeconds(s.TotalTimeWorked())
 
-	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.FullName(), started, w.String(), s.Status)
+	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.Name(), started, w.String(), s.Status)
 }
 
 // ToJson converts a timeslip to a JSON string.
