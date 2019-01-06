@@ -55,7 +55,7 @@ func Unmarshal(data []byte, slip *Slip) error {
 
 // Pause a started timeslip.
 func (s *Slip) Pause() error {
-	if s.Status == status.Paused() {
+	if s.isPaused() {
 		return fmt.Errorf("slip is already paused")
 	}
 
@@ -67,10 +67,7 @@ func (s *Slip) Pause() error {
 }
 
 func (s Slip) isPaused() bool {
-	if s.Status == status.Paused() {
-		return false
-	}
-	return true
+	return s.Status == status.Paused()
 }
 
 // Resume a paused timeslip.
@@ -107,7 +104,7 @@ func (s *Slip) Done(description string) {
 // adjustment, unless that would put it into the future, in
 // which case the started time should be pushed back.
 func (s *Slip) Adjust(adjustment string) error {
-	if s.Status != status.Paused() {
+	if !s.isPaused() {
 		return fmt.Errorf("only paused timeslips can be changed")
 	}
 
