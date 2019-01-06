@@ -9,10 +9,10 @@ import (
 )
 
 var resumeCmd = &cobra.Command{
-	Use:     "resume",
-	Short:   "Resume a paused timeslip",
-	Aliases: []string{"r"},
-	Args:    cobra.NoArgs,
+	Use:                   "resume",
+	Short:                 "Resume a paused timeslip",
+	Aliases:               []string{"r"},
+	Args:                  cobra.NoArgs,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		slip, err := resumeTimeSlip()
@@ -31,13 +31,13 @@ func init() {
 func resumeTimeSlip() (*timeslip.Slip, error) {
 	m := manager.NewFromConfig(initializeConfig())
 
-	slipJSON, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
+	slipJSON, slipError := m.PendingTimeSlip()
+	if slipError != nil {
+		return nil, slipError
 	}
 
-	slip, err := timeslip.NewFromJSON(slipJSON)
-	if err != nil {
+	slip := &timeslip.Slip{}
+	if err := timeslip.Unmarshal(slipJSON, slip); err != nil {
 		return nil, err
 	}
 

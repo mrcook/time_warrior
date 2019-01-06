@@ -13,8 +13,8 @@ var adjustNegative bool
 
 var adjustCmd = &cobra.Command{
 	Use:   "adjust DURATION",
-	Short: "Adjust +/- the time worked on a timeslip",
-	Long: `Increase or decrease the time worked on a paused timeslip using a
+	Short: "Adjust the time worked on a timeslip",
+	Long: `Increase or decrease the time worked on a timeslip using a
 duration string based on time units of hours, minutes, or seconds.
 
 The DURATION string should be in the format of '10m' - a decimal
@@ -61,13 +61,13 @@ func adjust(adjustment string) (*timeslip.Slip, error) {
 		return nil, fmt.Errorf("no pending timeslip found")
 	}
 
-	slipJSON, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
+	slipJSON, slipError := m.PendingTimeSlip()
+	if slipError != nil {
+		return nil, slipError
 	}
 
-	slip, err := timeslip.NewFromJSON(slipJSON)
-	if err != nil {
+	slip := &timeslip.Slip{}
+	if err := timeslip.Unmarshal(slipJSON, slip); err != nil {
 		return nil, err
 	}
 
@@ -78,8 +78,7 @@ func adjust(adjustment string) (*timeslip.Slip, error) {
 		slip.Pause()
 	}
 
-	err = slip.Adjust(adjustment)
-	if err != nil {
+	if err := slip.Adjust(adjustment); err != nil {
 		return nil, err
 	}
 

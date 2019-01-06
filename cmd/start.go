@@ -15,8 +15,8 @@ var startCmd = &cobra.Command{
 
 Only alphanumeric characters are allowed - no spaces - the project and task
 name must be separated by a period. Example: MyProject.StartTask`,
-	Aliases: []string{"s"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:               []string{"s"},
+	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		slip, err := startNewSlip(args[0])
@@ -39,17 +39,17 @@ func startNewSlip(name string) (*timeslip.Slip, error) {
 	m := manager.NewFromConfig(initializeConfig())
 
 	if m.PendingTimeSlipExists() {
-		slipJSON, err := m.PendingTimeSlip()
-		if err == nil {
+		slipJSON, slipError := m.PendingTimeSlip()
+		if slipError == nil {
 			return nil, fmt.Errorf("pending timeslip already exists")
 		}
 
-		slip, err := timeslip.NewFromJSON(slipJSON)
-		if err != nil {
+		slip := &timeslip.Slip{}
+		if err := timeslip.Unmarshal(slipJSON, slip); err != nil {
 			return nil, err
 		}
 
-		return slip, err
+		return slip, nil
 	}
 
 	slip, err := timeslip.New(name)

@@ -25,14 +25,14 @@ workers who need to track time worked on their client and personal projects.`,
 			return
 		}
 
-		slipJSON, err := m.PendingTimeSlip()
-		if err != nil {
-			fmt.Println(err)
+		slipJSON, slipError := m.PendingTimeSlip()
+		if slipError != nil {
+			fmt.Println(slipError)
 			return
 		}
 
-		slip, err := timeslip.NewFromJSON(slipJSON)
-		if err != nil {
+		slip := &timeslip.Slip{}
+		if err := timeslip.Unmarshal(slipJSON, slip); err != nil {
 			fmt.Println(err)
 			return
 		}

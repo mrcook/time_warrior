@@ -207,7 +207,8 @@ func TestFinishingAPausedTask(t *testing.T) {
 func TestNewFromJSONUnmarshallError(t *testing.T) {
 	var badJSON = []byte(`"project": "BadWarrior", "task":`)
 
-	_, err := timeslip.NewFromJSON(badJSON)
+	slip := &timeslip.Slip{}
+	err := timeslip.Unmarshal(badJSON, slip)
 	if err == nil {
 		t.Error("Expected unamrshal error")
 	}
@@ -226,7 +227,8 @@ func TestNewFromJSON(t *testing.T) {
 		"uuid": "0d8e895e-d3db-4887-86e3-8bb7f63ba101"
 	}`)
 
-	slip, err := timeslip.NewFromJSON(jsonBlob)
+	slip := &timeslip.Slip{}
+	err := timeslip.Unmarshal(jsonBlob, slip)
 	if err != nil {
 		t.Error("Failed to unamrshal the JSON data: ", err)
 	}

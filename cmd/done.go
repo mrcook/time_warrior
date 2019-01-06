@@ -9,11 +9,11 @@ import (
 )
 
 var doneCmd = &cobra.Command{
-	Use:     "done 'Description'",
-	Short:   "Mark current timeslip as completed",
-	Long:    `Mark the current timeslip as done, providing a useful description.`,
-	Aliases: []string{"d"},
-	Args:    cobra.ExactArgs(1),
+	Use:                   "done 'Description'",
+	Short:                 "Mark current timeslip as completed",
+	Long:                  `Mark the current timeslip as done, providing a useful description.`,
+	Aliases:               []string{"d"},
+	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		slip, err := done(args[0])
@@ -39,13 +39,13 @@ func done(description string) (*timeslip.Slip, error) {
 		return nil, fmt.Errorf("no pending timeslip found")
 	}
 
-	slipJSON, err := m.PendingTimeSlip()
-	if err != nil {
-		return nil, err
+	slipJSON, slipError := m.PendingTimeSlip()
+	if slipError != nil {
+		return nil, slipError
 	}
 
-	slip, err := timeslip.NewFromJSON(slipJSON)
-	if err != nil {
+	slip := &timeslip.Slip{}
+	if err := timeslip.Unmarshal(slipJSON, slip); err != nil {
 		return nil, err
 	}
 

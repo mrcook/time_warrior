@@ -47,15 +47,10 @@ func New(name string) (*Slip, error) {
 	return slip, nil
 }
 
-// NewFromJSON parses a JSON timeslip string.
-// Used for parsing timeslips read from the pending file.
-func NewFromJSON(blob []byte) (*Slip, error) {
-	slip := &Slip{}
-	err := json.Unmarshal(blob, slip)
-	if err != nil {
-		return nil, err
-	}
-	return slip, nil
+// Unmarshal parses the JSON-encoded data and stores the result
+// in the struct pointed to by `slip`.
+func Unmarshal(data []byte, slip *Slip) error {
+	return json.Unmarshal(data, slip)
 }
 
 // Pause a started timeslip.
