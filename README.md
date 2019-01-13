@@ -118,6 +118,86 @@ Here is a full example of adding `1 hour` and `15 minutes` to a running timeslip
 If you make a mistake when starting a new timeslip, perhaps using an incorrect project name, you can delete it easily with this command.
 
 
+## Reports
+
+Reports can be generated using the `report` command, with the listing printed to the terminal:
+
+    $ tw report
+       3h  01m : Project A
+       1h  22m : Project B
+    ===========
+       4h  23m
+
+The time worked is specified in the `h` and `m` columns (hours, minutes), which is followed by the project name. At the end of each listing, the total time worked is displayed.
+
+
+### Projects Overview
+
+When no project name has been given, all projects found in the `$HOME/time_warrior` directory will be included, and displayed in alphabetical order.
+
+    $ tw report
+       3h  01m : Project A
+      11h  22m : Project B
+      70h  52m : TimeWarrior
+    ===========
+      85h  05m
+
+
+### Tasks Overview
+
+When specifying a project name, all tasks within that project will be included, and displayed in alphabetical order.
+
+    $ tw report TimeWarrior
+    Project Name: TimeWarrior
+    
+    Task List
+      10h   5m : .
+       8h  19m : AdjustCommand
+       .
+       .
+       .
+       4h  11m : Timeslip
+    ===========
+      70h  52m
+
+Note the `.` task name above. If a timeslip is recorded without a task name being used then these will be grouped here.
+
+To have a better breakdown in your reports it's recommended that task names be used when starting new timeslips.
+
+
+### Report Time Periods
+
+Although it is interesting to know the total time worked on a project, it's more common for a specific period of time, such as _today_ or _last month_, to be requested.
+
+The `report` command takes a `-p` flag to specify a time period:
+
+    $ tw report -p w TimeWarrior
+    Project Name: TimeWarrior
+    Time Period:  This Week (Jan 7, 2019 to Jan 13, 2019)
+    
+    Task List
+       1h  32m : Documentation
+      10h  20m : Reports
+    ===========
+      11h  52m
+
+The following time periods are available:
+
+* `t` - Today
+* `w` - This Week
+* `m` - This Month
+* `y` - This Year
+
+* `1d` - Yesterday
+* `1w` - Last Week
+* `1m` - Last Month
+* `1y` - Last Year
+
+A time period of `1d` can be described as _one day previous_, otherwise known as _yesterday_, and `1m` would be _one month previous_ (_last month_).
+
+I've tried to follow the same pattern as with the _adjust_ command, hopefully this nomenclature is clear.
+
+
 ## Installation
 
     $ go get -u -v github.com/mrcook/time_warrior/...
