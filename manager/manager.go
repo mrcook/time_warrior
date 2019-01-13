@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -88,6 +89,24 @@ func (m manager) DeletePending() error {
 		return fmt.Errorf("pending timeslip may not have been deleted")
 	}
 	return nil
+}
+
+// AllProjectFilenames return a list of file names for all projects.
+func (m manager) AllProjectFilenames() []string {
+	files, _ := filepath.Glob(filepath.Join(m.dataDirectory, "*.json"))
+	return files
+}
+
+// ProjectFilename returns the file name for the requested project.
+func (m manager) ProjectFilename(projectName string) (string, bool) {
+	filename := filepath.Join(m.dataDirectory, toSnakeCase(projectName)+".json")
+
+	_, err := os.Stat(filename)
+	if err != nil {
+		return "", false
+	}
+
+	return filename, true
 }
 
 var exp = regexp.MustCompile("([a-z0-9]+)([A-Z])")
