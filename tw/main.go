@@ -1,4 +1,4 @@
-// TimeWarrior Copyright (c) 2017-2018 Michael R. Cook
+// TimeWarrior Copyright (c) 2017-2019 Michael R. Cook
 package main
 
 import (
