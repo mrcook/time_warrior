@@ -2,6 +2,20 @@
 
 ## HEAD
 
+- Update CHANGELOG
+
+
+## 1.2.0 (2019-01-13)
+
+- Add basic reporting.
+- Fix `toSnakeCase()` to split on numbers correctly.
+- More refactoring.
+
+
+## 1.1.1 (2018-11-01)
+
+- Small fix to `adjust` command to handle missing time unit.
+- Small refactor of `manager` package.
 - Add some basic code documentation.
 
 
