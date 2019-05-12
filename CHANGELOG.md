@@ -2,6 +2,9 @@
 
 ## HEAD
 
+
+## 1.2.1 (2019-05-12)
+
 - Fix: do not change `modified` time when completing **paused** timeslips.
 - Add missing entries to CHANGELOG.
 
