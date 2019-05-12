@@ -89,10 +89,9 @@ func (s *Slip) Done(description string) {
 	if s.Status == status.Started() {
 		s.Worked += currentTime - s.Modified
 		s.Finished = currentTime
-		s.Modified = s.Finished
+		s.Modified = currentTime
 	} else {
 		s.Finished = s.Modified
-		s.Modified = timeNow()
 	}
 
 	s.Description = description

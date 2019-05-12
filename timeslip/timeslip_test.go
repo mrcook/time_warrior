@@ -199,8 +199,8 @@ func TestFinishingAPausedTask(t *testing.T) {
 	if ts.Worked != fifteenMinutes {
 		t.Errorf("Expected time worked to not change from %d, got %d", fifteenMinutes, ts.Worked)
 	}
-	if ts.Modified == modifiedTime {
-		t.Error("Expected modified time to have been updated")
+	if ts.Modified != modifiedTime {
+		t.Error("Expected modified time have not changed")
 	}
 }
 
