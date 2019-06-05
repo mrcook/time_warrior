@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mrcook/time_warrior/configuration"
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/mrcook/time_warrior/timeslip"
-	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any sub commands

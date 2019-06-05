@@ -3,9 +3,10 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/mrcook/time_warrior/timeslip"
-	"github.com/spf13/cobra"
 )
 
 var startCmd = &cobra.Command{

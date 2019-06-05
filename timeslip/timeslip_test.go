@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/mrcook/time_warrior/timeslip"
 	"github.com/mrcook/time_warrior/timeslip/status"
 )

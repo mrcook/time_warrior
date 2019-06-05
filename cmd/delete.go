@@ -3,14 +3,15 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mrcook/time_warrior/manager"
 	"github.com/spf13/cobra"
+
+	"github.com/mrcook/time_warrior/manager"
 )
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "Delete an in progress timeslip",
-	Args:  cobra.NoArgs,
+	Use:                   "delete",
+	Short:                 "Delete an in progress timeslip",
+	Args:                  cobra.NoArgs,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := deletePendingTimeSlip(); err != nil {
