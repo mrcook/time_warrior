@@ -54,7 +54,7 @@ There are several points to take note of regarding starting new timeslips:
 
 This will pause the currently running timeslip, and print the details to the terminal:
 
-    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: paused
+    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: paused (2017-12-11 13:39)
 
 
 ### Resume Timeslip
@@ -125,10 +125,14 @@ Reports can be generated using the `report` command, with the listing printed to
     $ tw report
        3h  01m : Project A
        1h  22m : Project B
+    -----------
+       0h  10m : Project A pending timeslip
     ===========
-       4h  23m
+       4h  33m
 
-The time worked is specified in the `h` and `m` columns (hours, minutes), which is followed by the project name. At the end of each listing, the total time worked is displayed.
+The time worked is specified in the `h` and `m` columns (hours, minutes), which is followed by the project name.
+At the end of each listing the total time worked is displayed. If there are any pending timeslips in progress,
+this information is also included.
 
 
 ### Projects Overview
@@ -157,8 +161,10 @@ When specifying a project name, all tasks within that project will be included, 
        .
        .
        4h  11m : Timeslip
+    -----------
+       0h  10m : Reports pending timeslip
     ===========
-      70h  52m
+      70h  62m
 
 Note the `.` task name above. If a timeslip is recorded without a task name being used then these will be grouped here.
 
