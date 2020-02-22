@@ -8,10 +8,13 @@ import (
 	"strings"
 
 	"github.com/mrcook/time_warrior/reports/period"
+	"github.com/mrcook/time_warrior/timeslip"
 	"github.com/mrcook/time_warrior/timeslip/worked"
 )
 
 type Report struct {
+	PendingTimeslip *timeslip.Slip
+
 	timePeriod      *period.Period
 	totalTimeWorked int
 	projects        []*project
@@ -26,10 +29,10 @@ func New(timeUnit string) *Report {
 // ProcessProjectFile reads a project file and processes all of its timeslips,
 // calculating the time worked for each task.
 func (r *Report) ProcessProjectFile(filename string) {
-	file, ferr := os.Open(filename)
-	if ferr != nil {
+	file, err := os.Open(filename)
+	if err != nil {
 		// it's okay to stop the program for file read errors
-		log.Fatal(ferr)
+		log.Fatal(err)
 	}
 	defer file.Close()
 
@@ -79,11 +82,15 @@ func (r Report) printProjects() {
 		}
 	}
 
-	fmt.Println("===========")
+	if r.PendingTimeslip.TotalTimeWorked() > 0 {
+		fmt.Println("-----------")
 
-	w := worked.WorkTime{}
-	w.FromSeconds(r.totalTimeWorked)
-	fmt.Printf("%4dh %3dm\n", w.Hours, w.Minutes)
+		pending := worked.WorkTime{}
+		pending.FromSeconds(r.PendingTimeslip.TotalTimeWorked())
+		fmt.Printf("%4dh %3dm : %s pending timeslip\n", pending.Hours, pending.Minutes, r.PendingTimeslip.Project)
+	}
+
+	r.printTotal(r.totalTimeWorked + r.PendingTimeslip.TotalTimeWorked())
 }
 
 // Displays project overview, along with all tasks and their time worked.
@@ -108,10 +115,29 @@ func (r Report) printProjectTasks() {
 		}
 	}
 
+	if p.name == r.PendingTimeslip.Project && r.PendingTimeslip.TotalTimeWorked() > 0 {
+		fmt.Println("-----------")
+
+		pending := worked.WorkTime{}
+		pending.FromSeconds(r.PendingTimeslip.TotalTimeWorked())
+
+		task := ""
+		if r.PendingTimeslip.Task != "" {
+			task = fmt.Sprintf("%s ", r.PendingTimeslip.Task)
+		}
+
+		fmt.Printf("%4dh %3dm : %spending timeslip\n", pending.Hours, pending.Minutes, task)
+	}
+
+	r.printTotal(p.totalTimeWorked + r.PendingTimeslip.TotalTimeWorked())
+}
+
+// Displays the total time worked for a report
+func (r Report) printTotal(totalTimeWorked int) {
 	fmt.Println("===========")
 
 	w := worked.WorkTime{}
-	w.FromSeconds(p.totalTimeWorked)
+	w.FromSeconds(totalTimeWorked)
 	fmt.Printf("%4dh %3dm\n", w.Hours, w.Minutes)
 }
 

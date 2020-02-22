@@ -7,6 +7,7 @@ import (
 
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/mrcook/time_warrior/reports"
+	"github.com/mrcook/time_warrior/timeslip"
 )
 
 var period = "t"
@@ -58,7 +59,15 @@ func init() {
 func generateReport(projectName, period string) {
 	m := manager.NewFromConfig(initializeConfig())
 
+	pendingSlip := &timeslip.Slip{}
+	if pending, err := m.PendingTimeSlip(); err == nil {
+		_ = timeslip.Unmarshal(pending, pendingSlip)
+	}
+
 	report := reports.New(period)
+	if pendingSlip.TotalTimeWorked() > 0 {
+		report.PendingTimeslip = pendingSlip
+	}
 
 	if projectName == "" {
 		for _, filename := range m.AllProjectFilenames() {
