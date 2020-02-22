@@ -161,7 +161,12 @@ func (s Slip) String() string {
 	w := worked.WorkTime{}
 	w.FromSeconds(s.TotalTimeWorked())
 
-	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s", s.Name(), started, w.String(), s.Status)
+	pausedTimestamp := ""
+	if s.isPaused() {
+		pausedTimestamp = fmt.Sprintf(" (%s)", time.Unix(int64(s.Modified), 0).Format("2006-01-02 15:04"))
+	}
+
+	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s%s", s.Name(), started, w.String(), s.Status, pausedTimestamp)
 }
 
 // ToJson converts a timeslip to a JSON string.

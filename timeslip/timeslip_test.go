@@ -286,7 +286,8 @@ func TestStringOutput(t *testing.T) {
 	slip.Modified = started
 	slip.Pause()
 
-	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused", formattedStart)
+	pausedTimestamp := time.Unix(int64(slip.Modified), 0).Format("2006-01-02 15:04")
+	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused (%s)", formattedStart, pausedTimestamp)
 
 	output := slip.String()
 	if output != expectedOutput {
