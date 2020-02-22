@@ -13,7 +13,7 @@ import (
 )
 
 type Report struct {
-	PendingTimeslip *timeslip.Slip
+	PendingTimeslip timeslip.Slip
 
 	timePeriod      *period.Period
 	totalTimeWorked int

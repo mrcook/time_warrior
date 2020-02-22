@@ -59,9 +59,9 @@ func init() {
 func generateReport(projectName, period string) {
 	m := manager.NewFromConfig(initializeConfig())
 
-	pendingSlip := &timeslip.Slip{}
+	pendingSlip := timeslip.Slip{}
 	if pending, err := m.PendingTimeSlip(); err == nil {
-		_ = timeslip.Unmarshal(pending, pendingSlip)
+		_ = timeslip.Unmarshal(pending, &pendingSlip)
 	}
 
 	report := reports.New(period)
