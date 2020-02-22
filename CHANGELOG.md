@@ -3,6 +3,12 @@
 ## HEAD
 
 
+## 1.3.1 (2020-02-22)
+
+- Append paused timestamp on paused timeslips.
+- Reports: include worked time for any pending timeslips.
+
+
 ## 1.2.1 (2019-05-12)
 
 - Fix: do not change `modified` time when completing **paused** timeslips.
