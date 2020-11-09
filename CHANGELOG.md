@@ -10,8 +10,15 @@
 
 ## 1.3.1 (2020-02-22)
 
-- Append paused timestamp on paused timeslips.
-- Reports: include worked time for any pending timeslips.
+- Fixes a bug in reports related to paused timeslips.
+
+
+## 1.3.0 (2020-02-22)
+
+- Append the timestamp to the `tw` output for when a timeslip was paused.
+- Reports now include any worked time for a pending timeslip.
+- Update app dependencies
+- Use `go mod`
 
 
 ## 1.2.1 (2019-05-12)
