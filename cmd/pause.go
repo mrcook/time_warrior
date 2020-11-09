@@ -38,6 +38,10 @@ func pauseTimeSlip() (*timeslip.Slip, error) {
 		return nil, slipError
 	}
 
+	if len(slipJSON) == 0 {
+		return nil, fmt.Errorf("no timeslip to pause")
+	}
+
 	slip := &timeslip.Slip{}
 	if err := timeslip.Unmarshal(slipJSON, slip); err != nil {
 		return nil, err
