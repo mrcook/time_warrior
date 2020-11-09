@@ -3,6 +3,11 @@
 ## HEAD
 
 
+## 1.3.2 (2020-11-09)
+
+- display a message (not error) when pausing a non-existing timeslip.
+
+
 ## 1.3.1 (2020-02-22)
 
 - Append paused timestamp on paused timeslips.
