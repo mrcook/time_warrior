@@ -19,7 +19,7 @@ var reportCmd = &cobra.Command{
 
 Time Periods:
   - t=today, w=this week, m=this month, y=this year.
-  - 1d=yesterday, 1w=last week, 1m=last month, 1y=last year.
+  - 1d=yesterday, nd=n'th day back, 1w=last week, 1m=last month, 1y=last year.
 
 Project name omitted: report is generated showing the total time worked for
 each Project.
