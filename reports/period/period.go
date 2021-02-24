@@ -1,6 +1,10 @@
 package period
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -17,40 +21,53 @@ func Parse(unit string) *Period {
 	var start, end time.Time
 	var period string
 
-	switch unit {
-	case "t":
+	switch {
+	case unit == "t":
 		period = "Today"
 		start = p.BeginningOfDay(now)
 		end = p.EndOfDay(now)
-	case "w":
+	case unit == "w":
 		period = "This Week"
 		start = p.BeginningOfWeek(now)
 		end = p.EndOfWeek(now)
-	case "m":
+	case unit == "m":
 		period = "This Month"
 		start = p.BeginningOfMonth(now)
 		end = p.EndOfMonth(now)
-	case "y":
+	case unit == "y":
 		period = "This Year"
 		start = p.BeginningOfYear(now)
 		end = p.EndOfYear(now)
-	case "1d":
+	case unit == "1d":
 		period = "Yesterday"
-		t := p.Yesterday(now)
+		t := p.PreviousDay(now, -1)
 		start = p.BeginningOfDay(t)
 		end = p.EndOfDay(t)
-	case "1w":
+	case unit == "1w":
 		period = "Last Week"
 		start = p.BeginningOfPreviousWeek(now)
 		end = p.EndOfPreviousWeek(now)
-	case "1m":
+	case unit == "1m":
 		period = "Last Month"
 		start = p.BeginningOfPreviousMonth(now)
 		end = p.EndOfPreviousMonth(now)
-	case "1y":
+	case unit == "1y":
 		period = "Last Year"
 		start = p.BeginningOfPreviousYear(now)
 		end = p.EndOfPreviousYear(now)
+	case strings.Contains(unit, "d"):
+		daysBack, err := strconv.Atoi(strings.TrimSuffix(unit, "d"))
+		if err != nil {
+			fmt.Println("Invalid path")
+			os.Exit(1)
+		}
+		if daysBack < 0 {
+			daysBack *= -1
+		}
+		period = strconv.Itoa(daysBack) + " days back"
+		t := p.PreviousDay(now, -1*daysBack)
+		start = p.BeginningOfDay(t)
+		end = p.EndOfDay(t)
 	default:
 		start = p.BeginningOfDay(now)
 		end = p.EndOfDay(now)
@@ -90,7 +107,11 @@ func (p Period) EndOfDay(t time.Time) time.Time {
 }
 
 func (p Period) Yesterday(t time.Time) time.Time {
-	return t.AddDate(0, 0, -1)
+	return p.PreviousDay(t, -1)
+}
+
+func (p Period) PreviousDay(t time.Time, offsetDays int) time.Time {
+	return t.AddDate(0, 0, offsetDays)
 }
 
 func (p Period) lastWeek(t time.Time) time.Time {
