@@ -3,6 +3,19 @@
 A command line time tracking tool for people who need to track the time they work on their personal and client projects.
 
 
+## Installation
+
+```
+go install github.com/mrcook/time_warrior/...@latest
+```
+
+This installs to `$HOME/go/bin/` by default, which can be added to your `$PATH`:
+
+```
+export PATH=$PATH:$HOME/go/bin
+```
+
+
 ## Usage
 
 Simply type `tw` in your terminal to get started. You can view the help by typing `tw -h`, or by prefixing each sub command with `help`, like so: `tw help start`.
@@ -202,18 +215,6 @@ The following time periods are available:
 A time period of `1d` can be described as _one day previous_, otherwise known as _yesterday_, and `1m` would be _one month previous_ (_last month_).
 
 I've tried to follow the same pattern as with the _adjust_ command, hopefully this nomenclature is clear.
-
-
-## Installation
-
-    $ go get -u -v github.com/mrcook/time_warrior/...
-
-To install the app after manually cloning the repository you must first `cd` into the `tw` directory:
-
-    $ cd $GOPATH/src/github.com/mrcook/time_warrior/tw
-    $ go install
-
-If you've added the `$GOPATH/bin` directory to your `$PATH`, you can then just type `tw` to get started.
 
 
 ## Contributing
