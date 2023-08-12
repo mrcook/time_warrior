@@ -3,6 +3,12 @@
 ## HEAD
 
 
+## 1.3.3 (2023-08-12)
+
+- Bugfix: when resuming a non-existent timeslip, a better error is displayed.
+- Updates dependencies to their latest versions.
+
+
 ## 1.3.2 (2020-11-09)
 
 - display a message (not error) when pausing a non-existing timeslip.
@@ -59,4 +65,3 @@ The following commands are available:
 - `adjust`: Adjust +/- the time worked on a timeslip
 - `delete`: Delete an in progress timeslip
 - `done`:   Mark current timeslip as completed
-
