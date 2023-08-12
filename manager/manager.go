@@ -27,6 +27,10 @@ func NewFromConfig(cfg *configuration.Config) *Manager {
 
 // PendingTimeSlip reads a timeslip from the pending file.
 func (m Manager) PendingTimeSlip() ([]byte, error) {
+	if !m.PendingTimeSlipExists() {
+		return nil, fmt.Errorf("can not resume, no pending timeslip found")
+	}
+
 	slip, err := os.ReadFile(m.pendingFile)
 	if err != nil {
 		return nil, err
