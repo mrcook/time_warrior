@@ -21,7 +21,7 @@ type Report struct {
 	errors          []error
 }
 
-// Returns a new report using the given time unit.
+// New returns a new report using the given time unit.
 func New(timeUnit string) *Report {
 	return &Report{timePeriod: period.Parse(timeUnit)}
 }
@@ -46,7 +46,7 @@ func (r *Report) ProcessProjectFile(filename string) {
 }
 
 // PrintReport prints a report to the terminal for the projects/tasks.
-func (r Report) PrintReport() {
+func (r *Report) PrintReport() {
 	if len(r.projects) == 1 {
 		r.printProjectTasks()
 	} else if len(r.projects) > 1 {
@@ -63,7 +63,7 @@ func (r Report) PrintReport() {
 }
 
 // Displays all projects with their time worked to the terminal.
-func (r Report) printProjects() {
+func (r *Report) printProjects() {
 	if r.timePeriod.IsSet() {
 		fmt.Printf("Time Period: %s (%s)\n\n", r.timePeriod.Period(), r.formattedDates())
 	}
@@ -94,7 +94,7 @@ func (r Report) printProjects() {
 }
 
 // Displays project overview, along with all tasks and their time worked.
-func (r Report) printProjectTasks() {
+func (r *Report) printProjectTasks() {
 	p := r.projects[0]
 
 	fmt.Printf("Project Name: %s\n", p.name)
@@ -133,7 +133,7 @@ func (r Report) printProjectTasks() {
 }
 
 // Displays the total time worked for a report
-func (r Report) printTotal(totalTimeWorked int) {
+func (r *Report) printTotal(totalTimeWorked int) {
 	fmt.Println("===========")
 
 	w := worked.WorkTime{}
@@ -142,7 +142,7 @@ func (r Report) printTotal(totalTimeWorked int) {
 }
 
 // Prints all errors to the terminal.
-func (r Report) printErrors() {
+func (r *Report) printErrors() {
 	fmt.Printf("Errors found %d:\n", len(r.errors))
 
 	// Print the report errors
@@ -170,7 +170,7 @@ func (r *Report) sortProjectsByName() {
 	})
 }
 
-func (r Report) formattedDates() string {
+func (r *Report) formattedDates() string {
 	from := r.timePeriod.From().Format("Jan 2, 2006")
 	to := r.timePeriod.To().Format("Jan 2, 2006")
 

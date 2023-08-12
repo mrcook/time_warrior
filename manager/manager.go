@@ -3,7 +3,6 @@ package manager
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -13,22 +12,22 @@ import (
 	"github.com/mrcook/time_warrior/configuration"
 )
 
-type manager struct {
+type Manager struct {
 	dataDirectory string
 	pendingFile   string
 }
 
 // NewFromConfig returns a new manager from a config.
-func NewFromConfig(cfg *configuration.Config) *manager {
-	return &manager{
+func NewFromConfig(cfg *configuration.Config) *Manager {
+	return &Manager{
 		dataDirectory: cfg.DataDirectoryPath(),
 		pendingFile:   cfg.PendingFilePath(),
 	}
 }
 
 // PendingTimeSlip reads a timeslip from the pending file.
-func (m manager) PendingTimeSlip() ([]byte, error) {
-	slip, err := ioutil.ReadFile(m.pendingFile)
+func (m Manager) PendingTimeSlip() ([]byte, error) {
+	slip, err := os.ReadFile(m.pendingFile)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +35,7 @@ func (m manager) PendingTimeSlip() ([]byte, error) {
 }
 
 // PendingTimeSlipExists returns true if the pending file contains a current timeslip.
-func (m manager) PendingTimeSlipExists() bool {
+func (m Manager) PendingTimeSlipExists() bool {
 	file, err := os.Stat(m.pendingFile)
 	if err != nil {
 		fmt.Println(err)
@@ -50,7 +49,7 @@ func (m manager) PendingTimeSlipExists() bool {
 }
 
 // SaveCompleted saves a timeslip to the project JSON file.
-func (m manager) SaveCompleted(project string, slip []byte) error {
+func (m Manager) SaveCompleted(project string, slip []byte) error {
 	slip = append(slip[:], []byte("\n")...)
 
 	filename := path.Join(m.dataDirectory, toSnakeCase(project)+".json")
@@ -70,12 +69,12 @@ func (m manager) SaveCompleted(project string, slip []byte) error {
 }
 
 // SavePending saves a timeslip to the pending file.
-func (m manager) SavePending(slip []byte) error {
+func (m Manager) SavePending(slip []byte) error {
 	if len(slip) == 0 {
 		return fmt.Errorf("missing pending JSON data")
 	}
 
-	err := ioutil.WriteFile(m.pendingFile, slip, 0644)
+	err := os.WriteFile(m.pendingFile, slip, 0644)
 	if err != nil {
 		return fmt.Errorf("unable to save pending timeslip: %v", err)
 	}
@@ -84,7 +83,7 @@ func (m manager) SavePending(slip []byte) error {
 }
 
 // DeletePending deletes any timeslip found in the pending file.
-func (m manager) DeletePending() error {
+func (m Manager) DeletePending() error {
 	if err := os.Truncate(m.pendingFile, 0); err != nil {
 		return fmt.Errorf("pending timeslip may not have been deleted")
 	}
@@ -92,13 +91,13 @@ func (m manager) DeletePending() error {
 }
 
 // AllProjectFilenames return a list of file names for all projects.
-func (m manager) AllProjectFilenames() []string {
+func (m Manager) AllProjectFilenames() []string {
 	files, _ := filepath.Glob(filepath.Join(m.dataDirectory, "*.json"))
 	return files
 }
 
 // ProjectFilename returns the file name for the requested project.
-func (m manager) ProjectFilename(projectName string) (string, bool) {
+func (m Manager) ProjectFilename(projectName string) (string, bool) {
 	filename := filepath.Join(m.dataDirectory, toSnakeCase(projectName)+".json")
 
 	_, err := os.Stat(filename)

@@ -67,7 +67,7 @@ func (s *Slip) Pause() error {
 	return nil
 }
 
-func (s Slip) isPaused() bool {
+func (s *Slip) isPaused() bool {
 	return s.Status == status.Paused()
 }
 
@@ -137,7 +137,7 @@ func (s *Slip) Adjust(adjustment string) error {
 }
 
 // Name returns the full timeslip name as `Project.Task`, or just `Project` if no task is present.
-func (s Slip) Name() string {
+func (s *Slip) Name() string {
 	if s.Task == "" {
 		return s.Project
 	}
@@ -147,7 +147,7 @@ func (s Slip) Name() string {
 // TotalTimeWorked returns the total time worked on a timeslip.
 // If a timeslip is currently started, the worked time is adjusted based
 // on the modified and current time.
-func (s Slip) TotalTimeWorked() int {
+func (s *Slip) TotalTimeWorked() int {
 	if s.Status == status.Started() {
 		return timeNow() - s.Modified + s.Worked
 	}
@@ -155,7 +155,7 @@ func (s Slip) TotalTimeWorked() int {
 }
 
 // String returns a CLI friendly representation of the timeslip.
-func (s Slip) String() string {
+func (s *Slip) String() string {
 	started := time.Unix(int64(s.Started), 0).Format("2006-01-02 15:04")
 
 	w := worked.WorkTime{}
@@ -170,7 +170,7 @@ func (s Slip) String() string {
 }
 
 // ToJson converts a timeslip to a JSON string.
-func (s Slip) ToJson() []byte {
+func (s *Slip) ToJson() []byte {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return []byte{}

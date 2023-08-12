@@ -92,7 +92,7 @@ func (w *WorkTime) FromString(adjustment string) error {
 }
 
 // String returns the worked time as a string, e.g. `1h 10m`.
-func (w WorkTime) String() string {
+func (w *WorkTime) String() string {
 	if w.Hours != 0 && w.Minutes != 0 {
 		return fmt.Sprintf("%dh %dm", w.Hours, w.Minutes)
 	} else if w.Minutes != 0 && w.Seconds != 0 {
@@ -109,7 +109,7 @@ func (w WorkTime) String() string {
 }
 
 // ToSeconds returns the worked time in seconds.
-func (w WorkTime) ToSeconds() int {
+func (w *WorkTime) ToSeconds() int {
 	hours := w.Hours * 60 * 60
 	minutes := w.Minutes * 60
 
