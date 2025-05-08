@@ -30,6 +30,7 @@ func setupNewInstall(config *configuration.Config) error {
 		return err
 	}
 
+	// Create pending file if it doesn't exist
 	pending := config.PendingFilePath()
 	if _, err := os.Stat(pending); err != nil {
 		f, createErr := os.Create(pending)
@@ -38,6 +39,17 @@ func setupNewInstall(config *configuration.Config) error {
 		}
 		defer f.Close()
 		fmt.Println("pending file was created!")
+	}
+
+	// Create project file if it doesn't exist
+	project := config.ProjectFilePath()
+	if _, err := os.Stat(project); err != nil {
+		f, createErr := os.Create(project)
+		if createErr != nil {
+			return createErr
+		}
+		defer f.Close()
+		fmt.Println("project file was created!")
 	}
 
 	if !config.VerifyDataFilesPresent() {

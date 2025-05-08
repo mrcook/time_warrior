@@ -22,6 +22,11 @@ workers who need to track time worked on their client and personal projects.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		m := manager.NewFromConfig(initializeConfig())
 		if !m.PendingTimeSlipExists() {
+			// Show current project if set
+			config := initializeConfig()
+			if proj, err := config.GetCurrentProject(); err == nil && proj != "" {
+				fmt.Printf("Current project: %s\n\n", proj)
+			}
 			cmd.Help()
 			return
 		}

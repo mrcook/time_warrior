@@ -1,229 +1,158 @@
 # TimeWarrior
 
-A command line time tracking tool for people who need to track the time they work on their personal and client projects.
+A command line time tracking tool for developers and freelance workers who need to track time worked on their client and personal projects.
 
+## Features
+
+- Track time spent on tasks with project organization
+- Start, pause, resume, and complete timeslips
+- Switch between tasks while maintaining time tracking
+- Generate detailed reports by project
+- Simple and intuitive command-line interface
+- Project-based organization for better time management
 
 ## Installation
 
-```
-go install github.com/mrcook/time_warrior/...@latest
+### From Source
+
+```bash
+git clone https://github.com/mrcook/time_warrior.git
+cd time_warrior
+go build -o tw ./tw
 ```
 
-This installs to `$HOME/go/bin/` by default, which can be added to your `$PATH`:
+Move the binary to a location in your PATH:
 
+```bash
+mv tw /usr/local/bin/
 ```
-export PATH=$PATH:$HOME/go/bin
-```
-
 
 ## Usage
 
-Simply type `tw` in your terminal to get started. You can view the help by typing `tw -h`, or by prefixing each sub command with `help`, like so: `tw help start`.
+### Basic Commands
 
-By default, running the application will display the help page, however, if you have a _pending_ timeslip in progress then those details will be printed instead:
+```bash
+# Show current status and available commands
+tw
 
-    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 22 minutes | Status: started
+# Start a new timeslip
+tw start [Project.Task]    # Start a task (uses current project if not specified)
+tw start Project.Task      # Start a task with specific project
 
-The `Worked` time format is displayed using `hours`, `minutes`, `seconds`, along with two abbreviated combinations: `1h 23m` and `10m 14s`.
+# Pause the current timeslip
+tw pause                   # Pause current task
+tw p                      # Alias for pause
 
-On the very first time you run TimeWarrior on your system, a directory will be created in `$HOME/time_warrior`. This is where all your project data files will be stored - it can be useful to make this into a `git` repository.
+# Resume a paused timeslip
+tw resume                  # Resume paused task
 
+# Complete the current timeslip
+tw done                    # Mark current task as completed
 
-### Shortcuts
+# Switch to a new task
+tw switch [Task]           # Stop current task and start new one (uses current project)
+tw switch Project.Task     # Switch to a task in a different project
 
-Common commands have a _short_ alias:
+# Delete the current timeslip
+tw delete                  # Delete current task
 
-  - `s`, `start`
-  - `p`, `pause`
-  - `r`, `resume`
-  - `d`, `done`
+# Adjust time on the current timeslip
+tw adjust +30m             # Add 30 minutes
+tw adjust -15m             # Subtract 15 minutes
+```
 
+### Project Management
 
-### Start New Timeslip
+```bash
+# Set or show current project
+tw project                 # Show current project
+tw project ProjectName     # Set current project
+tw pr                      # Alias for project command
 
-    $ tw start MyProject.SetupTask
+# Generate a report
+tw report                  # Show report for all projects
+tw report ProjectName      # Show report for specific project
+```
 
-This command will start a new _pending_ timeslip with a _project_ name of `MyProject` and a _task_ name of `SetupTask`. This timeslip will be saved in the `$HOME/time_warrior/.pending` file, and the details printed to the command line:
+### Time Format
 
-    MyProject.SetupTask | Started: 2017-12-11 13:35 | Worked: 0 seconds | Status: started
+Time adjustments can be specified in various formats:
+- `+30m` or `-30m` for minutes
+- `+1h` or `-1h` for hours
+- `+1h30m` for combined hours and minutes
 
-Recommendations for starting new timeslips:
+## Examples
 
-- Use CamelCase for _Project_ and _Task_ names.
-- Always including a _Task_ name, this will improve the generated reports.
-- Tasks can span several work sessions, so it's okay to use the same _Project.Task_ name multiple times.
+### Basic Workflow
 
-There are several points to take note of regarding starting new timeslips:  
+```bash
+# Set your current project
+tw project alluvial
 
-- Use only ASCII characters for the `Project.Task` names - upper and lower case alphanumeric characters.
-- Spaces are **not allowed**.
-- The _task_ name is optional, but recommended.
-- Only one timeslip can be started at a time.
- 
+# Start working on a task
+tw start coding
 
-### Pause Timeslip
+# Pause for a break
+tw pause
 
-    $ tw pause
+# Resume work
+tw resume
 
-This will pause the currently running timeslip, and print the details to the terminal:
+# Switch to a different task
+tw switch testing
 
-    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: paused (2017-12-11 13:39)
+# Complete the task
+tw done
+```
 
+### Project-Specific Workflow
 
-### Resume Timeslip
+```bash
+# Work on multiple projects
+tw project client1
+tw start feature1
+tw pause
+tw project client2
+tw start bugfix
+tw done
+tw project client1
+tw resume
+```
 
-    $ tw resume
+### Time Adjustment
 
-This will resume a paused timeslip and print the details to the terminal:
+```bash
+# Add time to current task
+tw adjust +30m
 
-    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: started
+# Subtract time from current task
+tw adjust -15m
 
+# Add multiple hours and minutes
+tw adjust +2h30m
+```
 
-### Done! Complete Timeslip
+### Reporting
 
-    $ tw done "Basic project setup with a nice README"
+```bash
+# View all project reports
+tw report
 
-When you've finished your current task you can mark the slip as done, giving a short description of the work made. You should use either 'single' or "double" quotes.
+# View specific project report
+tw report alluvial
+```
 
-The details will again be printed on the command line:
+## Configuration
 
-    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 9m 23s | Status: completed
-
-If this is a new project a data file will be created using the project _name_ you gave (`MyProject`) and saved as `$HOME/time_warrior/my_project.json`. Each timeslip created for this project will be save on a separate line in this file.
-
-
-### Adjust Timeslip
-
-If you forget to `start`, `pause`, or `resume` your current timeslip, you can use the `adjust` command to add/subtract a time duration to the `worked` time.
-
-Adjustments are made using a simple duration string in the format of a decimal number followed by a single time unit character (e.g. `10m`). Allowed units are `h`, `m`, and `s`, for hours, minutes, and seconds, respectively.
-
-Here's some examples adding worked time:
-
-    $ tw adjust 2h
-    $ tw adjust 30m
-    $ tw adjust 45s
-
-    $ tw adjust 72m
-    $ tw adjust 720s
-
-To subtract time you need to specify the `-n` (negative) flag. Examples:
-
-    $ tw adjust -n 1h
-    $ tw adjust -n 20m
-    $ tw adjust -n 90s
-
-Here is a full example of adding `1 hour` and `15 minutes` to a running timeslip:
-
-    $ tw
-    MyProject.SetupTask | Started: 2017-12-11 18:01 | Worked: 15m | Status: started
-
-    $ tw adjust 75m
-    MyProject.SetupTask | Started: 2017-12-11 18:01 | Worked: 1h 30m | Status: started
-
-
-### Delete Timeslip
-
-**Caution! This action can not be undone!**
-
-    $ tw delete
-
-If you make a mistake when starting a new timeslip, perhaps using an incorrect project name, you can delete it easily with this command.
-
-
-## Reports
-
-Reports can be generated using the `report` command, with the listing printed to the terminal:
-
-    $ tw report
-       3h  01m : Project A
-       1h  22m : Project B
-    -----------
-       0h  10m : Project A pending timeslip
-    ===========
-       4h  33m
-
-The time worked is specified in the `h` and `m` columns (hours, minutes), which is followed by the project name.
-At the end of each listing the total time worked is displayed. If there are any pending timeslips in progress,
-this information is also included.
-
-
-### Projects Overview
-
-When no project name has been given, all projects found in the `$HOME/time_warrior` directory will be included, and displayed in alphabetical order.
-
-    $ tw report
-       3h  01m : Project A
-      11h  22m : Project B
-      70h  52m : TimeWarrior
-    ===========
-      85h  05m
-
-
-### Tasks Overview
-
-When specifying a project name, all tasks within that project will be included, and displayed in alphabetical order.
-
-    $ tw report TimeWarrior
-    Project Name: TimeWarrior
-    
-    Task List
-      10h   5m : .
-       8h  19m : AdjustCommand
-       .
-       .
-       .
-       4h  11m : Timeslip
-    -----------
-       0h  10m : Reports pending timeslip
-    ===========
-      70h  62m
-
-Note the `.` task name above. If a timeslip is recorded without a task name being used then these will be grouped here.
-
-To have a better breakdown in your reports it's recommended that task names be used when starting new timeslips.
-
-
-### Report Time Periods
-
-Although it is interesting to know the total time worked on a project, it's more common for a specific period of time, such as _today_ or _last month_, to be requested.
-
-The `report` command takes a `-p` flag to specify a time period:
-
-    $ tw report -p w TimeWarrior
-    Project Name: TimeWarrior
-    Time Period:  This Week (Jan 7, 2019 to Jan 13, 2019)
-    
-    Task List
-       1h  32m : Documentation
-      10h  20m : Reports
-    ===========
-      11h  52m
-
-The following time periods are available:
-
-* `t` - Today
-* `w` - This Week
-* `m` - This Month
-* `y` - This Year
-
-* `1d` - Yesterday
-* `1w` - Last Week
-* `1m` - Last Month
-* `1y` - Last Year
-
-A time period of `1d` can be described as _one day previous_, otherwise known as _yesterday_, and `1m` would be _one month previous_ (_last month_).
-
-I've tried to follow the same pattern as with the _adjust_ command, hopefully this nomenclature is clear.
-
+TimeWarrior stores its data in the following locations:
+- Data directory: `~/.time_warrior/`
+- Pending timeslip: `~/.time_warrior/pending`
+- Project setting: `~/.time_warrior/.project`
 
 ## Contributing
 
-To contribute to the source code or documentation, you should [fork the TimeWarrior GitHub project](https://github.com/mrcook/time_warrior) and clone it to your local machine. Then making a PR (Pull Request) for review.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
+## License
 
-## Reporting Issues
-
-If you believe you have found a defect in TimeWarrior or its documentation, use the GitHub issue tracker to report the problem to the TimeWarrior maintainers.
-
-When reporting the issue, please provide the version of TimeWarrior in use (`tw --version`).
+This project is licensed under the MIT License - see the LICENSE file for details.

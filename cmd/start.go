@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -10,12 +11,15 @@ import (
 )
 
 var startCmd = &cobra.Command{
-	Use:   "start Project.Task",
+	Use:   "start [Project.Task]",
 	Short: "Start a new timeslip",
 	Long: `Start working on a new task, providing a project, and optional task name.
 
 Only alphanumeric characters are allowed - no spaces - the project and task
-name must be separated by a period. Example: MyProject.StartTask`,
+name must be separated by a period. Example: MyProject.StartTask
+
+If no project is provided in the task name, the current project will be used.
+If no project is set, you must provide the full project name.`,
 	Aliases:               []string{"s"},
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
@@ -51,6 +55,19 @@ func startNewSlip(name string) (*timeslip.Slip, error) {
 		}
 
 		return slip, nil
+	}
+
+	// Check if we need to use the current project
+	if !strings.Contains(name, ".") {
+		config := initializeConfig()
+		proj, err := config.GetCurrentProject()
+		if err != nil {
+			return nil, err
+		}
+		if proj == "" {
+			return nil, fmt.Errorf("no project set and no project provided in task name")
+		}
+		name = proj + "." + name
 	}
 
 	slip, err := timeslip.New(name)
