@@ -180,3 +180,8 @@ func (r *Report) formattedDates() string {
 		return fmt.Sprintf("%s to %s", from, to)
 	}
 }
+
+// Projects returns all projects in the report
+func (r *Report) Projects() []*project {
+	return r.projects
+}

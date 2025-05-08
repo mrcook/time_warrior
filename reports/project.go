@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"sort"
-	"strings"
 
 	"github.com/mrcook/time_warrior/reports/period"
 )
@@ -87,7 +86,7 @@ func (p project) withinTimePeriod(t *task) bool {
 	return t.finished >= int(p.timePeriod.From().Unix()) && t.finished <= int(p.timePeriod.To().Unix())
 }
 
-// Returns an array of all tasks, sorted by name.
+// Returns an array of all tasks, sorted by start time.
 func (p project) sortedTasks() []*task {
 	var tasks []*task
 
@@ -96,8 +95,18 @@ func (p project) sortedTasks() []*task {
 	}
 
 	sort.Slice(tasks, func(i, j int) bool {
-		return strings.ToLower(tasks[i].name) < strings.ToLower(tasks[j].name)
+		return tasks[i].started < tasks[j].started
 	})
 
 	return tasks
+}
+
+// Name returns the project name
+func (p *project) Name() string {
+	return p.name
+}
+
+// SortedTasks returns a sorted list of tasks
+func (p *project) SortedTasks() []*task {
+	return p.sortedTasks()
 }

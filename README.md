@@ -140,6 +140,11 @@ tw report
 
 # View specific project report
 tw report alluvial
+
+# Generate an agenda view (Mermaid diagram)
+tw agenda              # Show agenda for all projects
+tw agenda -p m        # Show agenda for current month
+tw agenda ProjectName # Show agenda for specific project
 ```
 
 ## Configuration

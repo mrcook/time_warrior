@@ -34,3 +34,18 @@ func newTask(jsonData []byte) (*task, error) {
 
 	return t, nil
 }
+
+// Name returns the task name
+func (t *task) Name() string {
+	return t.name
+}
+
+// Started returns the task start time
+func (t *task) Started() int {
+	return t.started
+}
+
+// Finished returns the task finish time
+func (t *task) Finished() int {
+	return t.finished
+}
