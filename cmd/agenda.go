@@ -75,10 +75,20 @@ func generateAgenda(projectName, period string) {
 			startTime := time.Unix(int64(t.Started()), 0)
 			endTime := time.Unix(int64(t.Finished()), 0)
 
+			// If the task is not finished, use current time as end time
+			if t.Finished() == 0 {
+				endTime = time.Now()
+			}
+
 			// Format the task name to be Mermaid-compatible
 			taskName := fmt.Sprintf("%s.%s", p.Name(), t.Name())
 			if t.Name() == "." {
 				taskName = p.Name()
+			}
+
+			// Add start time to task name to distinguish between multiple instances
+			if t.Started() > 0 {
+				taskName = fmt.Sprintf("%s (%s)", taskName, startTime.Format("15:04"))
 			}
 
 			fmt.Printf("    %s :%s, %s, %s\n",

@@ -2,6 +2,7 @@ package reports
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"sort"
 
@@ -44,9 +45,8 @@ func (p *project) process(file io.Reader) error {
 
 // Process a timeslip as a task and add the time worked to the project total.
 //
-// If a task name already exists then the time worked is added to the current
-// entry, otherwise the timeslip is saved as a new entry. A new project is
-// given the name as found in the first task.
+// Each timeslip is saved as a new task entry, even if the task name already exists.
+// This preserves the individual start and finish times for each task instance.
 func (p *project) processSlip(data []byte) error {
 	t, err := newTask(data)
 	if err != nil {
@@ -63,14 +63,9 @@ func (p *project) processSlip(data []byte) error {
 		return nil
 	}
 
-	// add as a new task if its name has not been seen previously,
-	// otherwise, add its worked time to the current task.
-	if _, ok := p.tasks[t.name]; !ok {
-		p.tasks[t.name] = t
-	} else {
-		p.tasks[t.name].timeWorked += t.timeWorked
-	}
-
+	// Create a unique key for this task instance
+	taskKey := fmt.Sprintf("%s_%d", t.name, t.started)
+	p.tasks[taskKey] = t
 	p.totalTimeWorked += t.timeWorked
 
 	return nil
@@ -78,12 +73,24 @@ func (p *project) processSlip(data []byte) error {
 
 // Check if the task was worked on during the desired time period.
 //
-// For simplicity, we only check that the finished time happened within the
-// from/to time period, but what if 95% of the work was done outside of this?
-// Perhaps a better solution would be to consider that at least 50% of the work
-// was completed within the desired period.
+// A task is considered within the time period if either:
+// 1. It started within the period
+// 2. It finished within the period
+// 3. It spans across the period (started before and finished after)
 func (p project) withinTimePeriod(t *task) bool {
-	return t.finished >= int(p.timePeriod.From().Unix()) && t.finished <= int(p.timePeriod.To().Unix())
+	periodStart := int(p.timePeriod.From().Unix())
+	periodEnd := int(p.timePeriod.To().Unix())
+
+	// Task started within period
+	startedInPeriod := t.started >= periodStart && t.started <= periodEnd
+
+	// Task finished within period
+	finishedInPeriod := t.finished >= periodStart && t.finished <= periodEnd
+
+	// Task spans across period
+	spansPeriod := t.started <= periodStart && (t.finished == 0 || t.finished >= periodEnd)
+
+	return startedInPeriod || finishedInPeriod || spansPeriod
 }
 
 // Returns an array of all tasks, sorted by start time.
