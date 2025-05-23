@@ -49,3 +49,8 @@ func (t *task) Started() int {
 func (t *task) Finished() int {
 	return t.finished
 }
+
+// TimeSpent returns the time worked in hours
+func (t *task) TimeSpent() float64 {
+	return float64(t.timeWorked) / 3600.0
+}
