@@ -3,6 +3,13 @@
 ## HEAD
 
 
+## 1.4.0 (2025-11-12)
+
+- Add a "resumed" status for when a paused timeslip is resumed.
+- Resumed timeslips show the last modified timestamp - like when paused.
+- Refactor and improve the timeslip tests.
+
+
 ## 1.3.3 (2023-08-12)
 
 - Bugfix: when resuming a non-existent timeslip, a better error is displayed.

@@ -7,7 +7,6 @@ import (
 
 	"github.com/mrcook/time_warrior/manager"
 	"github.com/mrcook/time_warrior/timeslip"
-	"github.com/mrcook/time_warrior/timeslip/status"
 )
 
 var adjustNegative bool
@@ -72,20 +71,8 @@ func adjust(adjustment string) (*timeslip.Slip, error) {
 		return nil, err
 	}
 
-	// Running timeslips must be paused
-	running := false
-	if slip.Status == status.Started() {
-		running = true
-		slip.Pause()
-	}
-
 	if err := slip.Adjust(adjustment); err != nil {
 		return nil, err
-	}
-
-	// Resume timeslip if it was previously running
-	if running {
-		slip.Resume()
 	}
 
 	if err := m.SavePending(slip.ToJson()); err != nil {

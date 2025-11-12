@@ -76,7 +76,7 @@ This will pause the currently running timeslip, and print the details to the ter
 
 This will resume a paused timeslip and print the details to the terminal:
 
-    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: started
+    MyProject.SetupTask | Started: 2017-12-11 13:37 | Worked: 2 minutes | Status: resumed (2017-12-11 14:01)
 
 
 ### Done! Complete Timeslip

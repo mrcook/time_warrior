@@ -2,6 +2,7 @@ package timeslip_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,211 +12,265 @@ import (
 	"github.com/mrcook/time_warrior/timeslip/status"
 )
 
-func TestNewTimeSlipDefaults(t *testing.T) {
+// TODO: some of these tests will fail when the second ticks over!
+
+func TestSlip_New(t *testing.T) {
+	t.Run("with both project and task name", func(t *testing.T) {
+		ts, err := timeslip.New("timeWarrior.TaskName")
+		if err != nil {
+			t.Errorf("unexpected error, got '%s'", err)
+		}
+
+		if ts.Project != "timeWarrior" {
+			t.Errorf("expected project name to be set, got '%s'", ts.Project)
+		}
+
+		if ts.Task != "TaskName" {
+			t.Errorf("expected task name to be set, got '%s'", ts.Task)
+		}
+	})
+
+	t.Run("when only project name is given", func(t *testing.T) {
+		ts, err := timeslip.New("timeWarrior")
+		if err != nil {
+			t.Errorf("unexpected error, got '%s'", err)
+		}
+
+		if ts.Project != "timeWarrior" {
+			t.Errorf("expected project name to be set, got '%s'", ts.Project)
+		}
+
+		if ts.Task != "" {
+			t.Errorf("expected task name to be blank, got '%s'", ts.Task)
+		}
+	})
+
+	t.Run("when multiple periods included", func(t *testing.T) {
+		_, err := timeslip.New("timeWarrior.ProjectNames.BadName")
+		if err == nil {
+			t.Fatalf("expected an error")
+		}
+
+		errorMessage := "bad Project/Task name format. Expected 'ProjectName.TaskName' format"
+		if err.Error() != errorMessage {
+			t.Errorf("expected '%s', got '%s'", errorMessage, err)
+		}
+	})
+}
+
+func TestSlip_New_withDefaults(t *testing.T) {
 	ts, err := timeslip.New("timeWarrior.New")
 	if err != nil {
-		t.Errorf("Expected no error, got '%v'", err)
+		t.Errorf("unxpected error, got '%s'", err)
 	}
 
 	if ts.Project != "timeWarrior" {
-		t.Errorf("Expected Project name 'timeWarrior', got '%s'", ts.Project)
+		t.Errorf("expected project name to be set, got '%s'", ts.Project)
 	}
+
 	if ts.Task != "New" {
-		t.Errorf("Expected Task to be 'New', got '%s'", ts.Task)
+		t.Errorf("expected task name to be set, got '%s'", ts.Task)
 	}
+
 	if ts.Description != "New Timeslip" {
-		t.Errorf("Expected default comment to be 'New Timeslip', got '%s'", ts.Description)
+		t.Errorf("expected default comment, got '%s'", ts.Description)
 	}
+
 	if ts.Started == 0 {
-		t.Error("Expected time to have been set")
+		t.Error("expected start time to have been set")
 	}
+
 	if ts.Modified != ts.Started {
-		t.Errorf("Expected Modified time to Equal Started. Expected %d, got %d", ts.Started, ts.Modified)
+		t.Errorf("expected modified time %d to equal started time %d", ts.Modified, ts.Started)
 	}
-	if ts.Status != status.Started() {
-		t.Errorf("Expected Status to be '%s', got '%s'", status.Started(), ts.Status)
+
+	if ts.Status != status.Started {
+		t.Errorf("expected '%s' status, got '%s'", status.Started, ts.Status)
 	}
+
 	if ts.UUID == "" {
-		t.Error("Expected an UUID to be set")
+		t.Error("expected an UUID to be set")
 	}
 }
 
-func TestOnlyProjectName(t *testing.T) {
-	ts, err := timeslip.New("timeWarrior")
-	if err != nil {
-		t.Errorf("Expected no error, got '%v'", err)
-	}
-
-	if ts.Project != "timeWarrior" {
-		t.Errorf("Expected Project to be 'timeWarrior', got '%s'", ts.Project)
-	}
-	if ts.Task != "" {
-		t.Errorf("Expected Task to be blank, got '%s'", ts.Task)
-	}
-}
-
-func TestProjectTaskName(t *testing.T) {
-	ts, err := timeslip.New("timeWarrior.TaskName")
-	if err != nil {
-		t.Errorf("Expected no error, got '%v'", err)
-	}
-
-	if ts.Project != "timeWarrior" {
-		t.Errorf("Expected Project to be 'timeWarrior', got '%s'", ts.Project)
-	}
-	if ts.Task != "TaskName" {
-		t.Errorf("Expected Task to be 'TaskName', got '%s'", ts.Task)
-	}
-}
-
-func TestMultiplePeriodsInProjectName(t *testing.T) {
-	_, err := timeslip.New("timeWarrior.ProjectNames.BadName")
-	if err == nil {
-		t.Errorf("Expected an Error due to multiple periods being used.")
-	}
-
-	errorMessage := "bad Project/Task name format. Expected 'ProjectName.TaskName' format"
-	if err.Error() != errorMessage {
-		t.Errorf("Expected '%s' error, got '%v'", errorMessage, err)
-	}
-}
-
-func TestUUIDGeneration(t *testing.T) {
+func TestSlip_UUIDGeneration(t *testing.T) {
 	ts, _ := timeslip.New("NewUUID")
 
 	if len(ts.UUID) != 36 {
-		t.Error("Expected the UUID to be 36 characters long")
+		t.Errorf("expected UUID with 36 characters, got %d", len(ts.UUID))
 	}
 
 	_, err := uuid.Parse(ts.UUID)
 	if err != nil {
-		t.Errorf("Expected a valid UUID, got error: %v", err)
+		t.Errorf("unexpected UUID error, got %s", err)
 	}
 }
 
-func TestPausing(t *testing.T) {
-	ts, _ := timeslip.New("Project.Pause")
-	ts.Started -= 100
-	ts.Modified -= 100
+func TestSlip_Pause(t *testing.T) {
+	t.Run("pause a timeslip", func(t *testing.T) {
+		unixNow := int(time.Now().Unix())
+		ts := timeslip.Slip{
+			Started:  unixNow - 60,
+			Worked:   0,
+			Modified: unixNow - 60,
+			Status:   status.Started,
+		}
+		modifiedWas := ts.Modified
 
-	worked := ts.Worked
-	modified := ts.Modified
+		err := ts.Pause()
+		if err != nil {
+			t.Fatalf("unexpected error on pause %s", err)
+		}
 
-	ts.Pause()
+		if ts.Status != status.Paused {
+			t.Errorf("expected '%s' status, got '%s'", status.Paused, ts.Status)
+		}
 
-	if ts.Status != status.Paused() {
-		t.Errorf("Expected status to be '%s', got '%s'", status.Paused(), ts.Status)
-	}
-	if ts.Modified < modified+100 {
-		t.Errorf("Expected updated Modified date, original: %d, current: %d", modified, ts.Modified)
-	}
-	if ts.Worked < 100 {
-		t.Errorf("Expected updated worked time, got %d, was %d", ts.Worked, worked)
-	}
+		if ts.Modified == modifiedWas {
+			t.Errorf("expected modified time %d to have been updated", ts.Modified)
+		}
+
+		if ts.Worked != 60 {
+			t.Errorf("expected worked time to have been updated, got %d", ts.Worked)
+		}
+	})
+
+	t.Run("pausing an already paused timeslip", func(t *testing.T) {
+		ts, _ := timeslip.New("Project.NotRePausable")
+		_ = ts.Pause()
+
+		if err := ts.Pause(); err == nil {
+			t.Errorf("expected error when pausing a paused slip")
+		}
+	})
 }
 
-func TestPausingAlreadyPausedSlip(t *testing.T) {
-	ts, _ := timeslip.New("Project.PausePaused")
-	ts.Started -= 100
-	ts.Modified -= 100
-	ts.Pause()
+func TestSlip_Resume(t *testing.T) {
+	t.Run("resume a paused timeslip", func(t *testing.T) {
+		unixNow := int(time.Now().Unix())
+		ts := timeslip.Slip{
+			Started:  unixNow - 60,
+			Worked:   30,
+			Modified: unixNow - 30,
+			Status:   status.Paused,
+		}
+		modifiedWas := ts.Modified
 
-	if err := ts.Pause(); err == nil {
-		t.Errorf("Expected an error when pausing a paused slip")
-	}
+		err := ts.Resume()
+		if err != nil {
+			t.Fatalf("unexpected resume error, got %s", err.Error())
+		}
+
+		if ts.Status != status.Resumed {
+			t.Errorf("expected '%s' status, got '%s'", status.Resumed, ts.Status)
+		}
+
+		if ts.Modified == modifiedWas {
+			t.Errorf("modified time was not updated")
+		}
+
+		if ts.Worked != 30 {
+			t.Errorf("worked time should remain unchanged, got %d", ts.Worked)
+		}
+	})
+
+	t.Run("resuming a started timeslip", func(t *testing.T) {
+		ts, _ := timeslip.New("Resume.Started")
+
+		err := ts.Resume()
+		if !strings.Contains(err.Error(), "slip is already in progress") {
+			t.Errorf("unexpected resume error, got %s", err.Error())
+		}
+	})
+
+	t.Run("resuming a resumed timeslip", func(t *testing.T) {
+		ts, _ := timeslip.New("Resume.Resumed")
+		_ = ts.Pause()
+		_ = ts.Resume()
+
+		err := ts.Resume()
+		if !strings.Contains(err.Error(), "slip is already in progress") {
+			t.Errorf("unexpected resume error, got %s", err.Error())
+		}
+	})
 }
 
-func TestResuming(t *testing.T) {
-	ts, _ := timeslip.New("Project.Resume")
-	ts.Started -= 200
-	ts.Modified -= 200
-	ts.Status = status.Paused()
+func TestSlip_Done(t *testing.T) {
+	unixNow := int(time.Now().Unix())
 
-	ts.Resume()
+	t.Run("finished a started timeslip", func(t *testing.T) {
+		ts := timeslip.Slip{
+			Started:  unixNow - 60,
+			Worked:   0,
+			Modified: unixNow - 60,
+			Status:   status.Started,
+		}
+		modifiedWas := ts.Modified
 
-	if ts.Status != status.Started() {
-		t.Errorf("Expected status to be '%s', got '%s'", status.Started(), ts.Status)
-	}
-	currentTime := int(time.Now().Unix())
-	if ts.Modified < currentTime-2 {
-		t.Errorf("Expected Modified to be updated, current time is %d, got %d", currentTime, ts.Modified)
-	}
+		description := "Write tests for completing a started timeslip"
+		ts.Done(description)
+
+		if ts.Status != status.Completed {
+			t.Errorf("unexpected status got '%s'", ts.Status)
+		}
+
+		if ts.Description != description {
+			t.Errorf("unexpected description got '%s'", ts.Description)
+		}
+
+		if ts.Worked != 60 {
+			t.Errorf("unexpected worked time, got %d", ts.Worked)
+		}
+
+		if ts.Finished == 0 {
+			t.Error("expected finished time to have been updated")
+		}
+
+		if ts.Modified == modifiedWas {
+			t.Error("expected modified time to have been updated")
+		}
+	})
+
+	t.Run("finishing a paused timeslip", func(t *testing.T) {
+		ts := timeslip.Slip{
+			Started:  unixNow - 60,
+			Worked:   30,
+			Modified: unixNow - 30,
+			Status:   status.Paused,
+		}
+		modifiedWas := ts.Modified
+
+		ts.Done("Write tests for completing a paused timeslip")
+
+		if ts.Finished == 0 {
+			t.Error("expected finished time to have been updated")
+		}
+
+		if ts.Finished > modifiedWas {
+			t.Errorf("expected finished time %d to equal modified time %d", ts.Finished, modifiedWas)
+		}
+
+		if ts.Worked != 30 {
+			t.Errorf("worked time should not have changed, got %d", ts.Worked)
+		}
+
+		if ts.Modified != modifiedWas {
+			t.Error("modified time should not have changed")
+		}
+	})
 }
 
-func TestResumingAlreadyStartedSlip(t *testing.T) {
-	ts, _ := timeslip.New("Resume.Started")
-
-	if err := ts.Resume(); err == nil {
-		t.Errorf("Expected an error when resuming a started slip")
-	}
-}
-
-func TestFinishingAStartedTask(t *testing.T) {
-	tenMinutesInSeconds := int((10 * time.Minute).Seconds())
-	description := "Write tests for completing a started timeslip"
-
-	ts, _ := timeslip.New("Work.Done")
-	ts.Started -= tenMinutesInSeconds
-	ts.Modified -= tenMinutesInSeconds
-
-	modifiedTime := ts.Modified
-
-	ts.Done(description)
-
-	if ts.Status != status.Completed() {
-		t.Errorf("Expected status to be '%s', got '%s'", status.Completed(), ts.Status)
-	}
-	if ts.Description != description {
-		t.Errorf("Expected description to be '%s', got '%s'", description, ts.Description)
-	}
-	if ts.Worked < tenMinutesInSeconds {
-		t.Errorf("Expected worked time to be at least %d seconds, got %d", tenMinutesInSeconds, ts.Worked)
-	}
-	if ts.Finished == 0 {
-		t.Errorf("Expected finished time to have been updated, got %d", ts.Finished)
-	}
-	if ts.Modified == modifiedTime {
-		t.Error("Expected modified time to have been updated")
-	}
-}
-
-func TestFinishingAPausedTask(t *testing.T) {
-	oneHourAgo := int(time.Now().Add(-1 * time.Hour).Unix())
-	halfHourAgo := int(time.Now().Add(-30 * time.Minute).Unix())
-	fifteenMinutes := int((15 * time.Minute).Seconds())
-
-	ts := timeslip.Slip{
-		Started:  oneHourAgo,
-		Worked:   fifteenMinutes,
-		Modified: halfHourAgo,
-		Status:   status.Paused(),
-	}
-	modifiedTime := halfHourAgo
-
-	ts.Done("Write tests for completing a paused timeslip")
-
-	if ts.Finished > modifiedTime {
-		t.Errorf("Expected finished time '%d', to equal original modified time '%d'", ts.Finished, modifiedTime)
-	}
-	if ts.Worked != fifteenMinutes {
-		t.Errorf("Expected time worked to not change from %d, got %d", fifteenMinutes, ts.Worked)
-	}
-	if ts.Modified != modifiedTime {
-		t.Error("Expected modified time have not changed")
-	}
-}
-
-func TestNewFromJSONUnmarshallError(t *testing.T) {
+func TestSlip_NewFromJSONUnmarshallError(t *testing.T) {
 	var badJSON = []byte(`"project": "BadWarrior", "task":`)
 
 	slip := &timeslip.Slip{}
 	err := timeslip.Unmarshal(badJSON, slip)
 	if err == nil {
-		t.Error("Expected unamrshal error")
+		t.Error("expected an unmarshal error, got none")
 	}
 }
 
-func TestNewFromJSON(t *testing.T) {
+func TestSlip_NewFromJSON(t *testing.T) {
 	var jsonBlob = []byte(`{
 		"project": "timeWarrior",
 		"task": "NewFromJSON",
@@ -231,278 +286,365 @@ func TestNewFromJSON(t *testing.T) {
 	slip := &timeslip.Slip{}
 	err := timeslip.Unmarshal(jsonBlob, slip)
 	if err != nil {
-		t.Error("Failed to unamrshal the JSON data: ", err)
+		t.Error("failed to unmarshal the JSON data: ", err)
 	}
 
 	if slip.Project != "timeWarrior" {
-		t.Errorf("Expected project name, got '%s'", slip.Project)
+		t.Errorf("expected project name, got '%s'", slip.Project)
 	}
 	if slip.Task != "NewFromJSON" {
-		t.Errorf("Expected task name, got '%s'", slip.Task)
+		t.Errorf("expected task name, got '%s'", slip.Task)
 	}
 	if slip.Description != "Testing import of JSON" {
-		t.Errorf("Expected description, got '%s'", slip.Description)
+		t.Errorf("expected description, got '%s'", slip.Description)
 	}
 	if slip.Started != 1442669540 {
-		t.Errorf("Expected started time, got '%d'", slip.Started)
+		t.Errorf("expected started time, got '%d'", slip.Started)
 	}
 	if slip.Worked != 472 {
-		t.Errorf("Expected time worked, got '%d'", slip.Worked)
+		t.Errorf("expected time worked, got '%d'", slip.Worked)
 	}
 	if slip.Finished != 1442674736 {
-		t.Errorf("Expected finished time, got '%d'", slip.Finished)
+		t.Errorf("expected finished time, got '%d'", slip.Finished)
 	}
 	if slip.Modified != 1442674736 {
-		t.Errorf("Expected modified time, got '%d'", slip.Modified)
+		t.Errorf("expected modified time, got '%d'", slip.Modified)
 	}
-	if slip.Status != status.Completed() {
-		t.Errorf("Expected status to be '%s', got '%s'", status.Completed(), slip.Status)
+	if slip.Status != status.Completed {
+		t.Errorf("expected '%s' status, got '%s'", status.Completed, slip.Status)
 	}
 	if slip.UUID != "0d8e895e-d3db-4887-86e3-8bb7f63ba101" {
-		t.Errorf("Expected UUID, got '%s'", slip.UUID)
+		t.Errorf("expected UUID, got '%s'", slip.UUID)
 	}
 }
 
-func TestName(t *testing.T) {
-	slip := timeslip.Slip{Project: "TimeWarrior", Task: "Name"}
+func TestSlip_Name(t *testing.T) {
+	t.Run("when both project and task names are present", func(t *testing.T) {
+		slip := timeslip.Slip{Project: "TimeWarrior", Task: "Name"}
 
-	if slip.Name() != "TimeWarrior.Name" {
-		t.Errorf("Expected Project and Task names joined with a perdiod, got: %s", slip.Name())
-	}
+		if slip.Name() != "TimeWarrior.Name" {
+			t.Errorf("expected Project and Task names joined with a period, got: %s", slip.Name())
+		}
+	})
 
-	slip.Task = ""
-	if slip.Name() != "TimeWarrior" {
-		t.Errorf("Expected just the project name, got: %s", slip.Name())
-	}
+	t.Run("when only project name is present", func(t *testing.T) {
+		slip := timeslip.Slip{Project: "TimeWarrior", Task: ""}
+
+		if slip.Name() != "TimeWarrior" {
+			t.Errorf("expected the project name, got '%s'", slip.Name())
+		}
+	})
 }
 
-func TestStringOutput(t *testing.T) {
-	sixMinutesAgo := time.Now().Add(-6 * time.Minute)
-	started := int(sixMinutesAgo.Unix())
-	formattedStart := sixMinutesAgo.Format("2006-01-02 15:04")
+func TestSlip_StringOutput(t *testing.T) {
+	now := time.Now()
+	sixMinutes := 6 * time.Minute
+	startedAgo := now.Add(-sixMinutes)
 
-	slip, _ := timeslip.New("timeWarrior.String")
-	slip.Started = started
-	slip.Modified = started
-	slip.Pause()
+	ts := timeslip.Slip{
+		Project:  "timeWarrior",
+		Task:     "String",
+		Started:  int(startedAgo.Unix()),
+		Worked:   int(sixMinutes.Seconds()),
+		Modified: int(now.Unix()),
+		Status:   status.Paused,
+	}
+	startStr := startedAgo.Format("2006-01-02 15:04")
+	modifiedStr := now.Format("2006-01-02 15:04")
 
-	pausedTimestamp := time.Unix(int64(slip.Modified), 0).Format("2006-01-02 15:04")
-	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused (%s)", formattedStart, pausedTimestamp)
+	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused (%s)", startStr, modifiedStr)
 
-	output := slip.String()
+	output := ts.String()
 	if output != expectedOutput {
-		t.Errorf("Formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
+		t.Errorf("formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
 	}
 }
 
-func TestTotalTimeWorkedForPausedSlip(t *testing.T) {
-	timeNow := time.Now()
-	started := timeNow.Add(-3 * time.Hour)
+func TestSlip_TotalTimeWorked(t *testing.T) {
+	newTimeslip := func(modified, worked int, state string) timeslip.Slip {
+		unixNow := int(time.Now().Unix())
 
-	slip := timeslip.Slip{
-		Project:  "timeWarrior",
-		Task:     "TimeWorked",
-		Started:  int(started.Unix()),
-		Worked:   int((18 * time.Minute).Seconds()),
-		Modified: int(timeNow.Add(-1 * time.Hour).Unix()),
-		Status:   status.Paused(),
+		return timeslip.Slip{
+			Project:  "timeWarrior",
+			Task:     "TimeWorked",
+			Started:  unixNow - 60,
+			Worked:   worked,
+			Modified: unixNow - modified,
+			Status:   state,
+		}
 	}
 
-	if slip.TotalTimeWorked() != 1080 {
-		t.Errorf("Expected 1080 seconds worked to be returned, got %d", slip.TotalTimeWorked())
-	}
+	t.Run("started timeslip with no pauses", func(t *testing.T) {
+		modifiedAgo := 60
+		previouslyWorked := 0
+
+		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Started)
+		want := modifiedAgo + previouslyWorked // 60+0
+
+		if slip.TotalTimeWorked() != want {
+			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
+		}
+	})
+
+	t.Run("currently paused timeslip, no previous pauses", func(t *testing.T) {
+		modifiedAgo := 30
+		previouslyWorked := 30
+
+		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Paused)
+		want := previouslyWorked // 30
+
+		if slip.TotalTimeWorked() != want {
+			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
+		}
+	})
+
+	t.Run("resumed timeslip with only a single pause", func(t *testing.T) {
+		modifiedAgo := 30
+		previouslyWorked := 30
+
+		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Resumed)
+		want := modifiedAgo + previouslyWorked // 30+30
+
+		if slip.TotalTimeWorked() != want {
+			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
+		}
+	})
+
+	t.Run("resumed timeslip with multiple previous pauses", func(t *testing.T) {
+		modifiedAgo := 10
+		previouslyWorked := 15
+
+		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Resumed)
+		want := modifiedAgo + previouslyWorked // 10+15
+
+		if slip.TotalTimeWorked() != want {
+			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
+		}
+	})
 }
 
-func TestTotalTimeWorkedForStartedSlip(t *testing.T) {
-	timeNow := time.Now()
-	started := timeNow.Add(-3 * time.Hour)
-
-	slip := timeslip.Slip{
-		Project:  "timeWarrior",
-		Task:     "TimeWorked",
-		Started:  int(started.Unix()),
-		Worked:   int((23 * time.Minute).Seconds()),
-		Modified: int(timeNow.Add(-1 * time.Hour).Unix()),
-		Status:   status.Started(),
-	}
-
-	if slip.TotalTimeWorked() != 4980 {
-		t.Errorf("Expected 4980 seconds worked to be returned, got %d", slip.TotalTimeWorked())
-	}
-}
-
-func TestToJson(t *testing.T) {
+func TestSlip_ToJson(t *testing.T) {
 	slip, _ := timeslip.New("Output.ToJson")
 	expectedOutput := fmt.Sprintf(`{"project":"Output","task":"ToJson","description":"New Timeslip","started":%d,"worked":0,"finished":0,"modified":%d,"status":"started","uuid":"%s"}`, slip.Started, slip.Modified, slip.UUID)
 
 	output := slip.ToJson()
 	if string(output) != expectedOutput {
-		t.Errorf("Formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
+		t.Errorf("formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
 	}
 }
 
-func TestAdjustStartedTimeslip(t *testing.T) {
-	slip, _ := timeslip.New("Adjust.Started")
+func TestSlip_AdjustWorked(t *testing.T) {
+	newTimeslip := func(started, modified, worked int, state string) timeslip.Slip {
+		unixNow := int(time.Now().Unix())
 
-	err := slip.Adjust("10m")
-	if err == nil {
-		t.Error("only paused timeslips can be changed")
-	}
-}
-
-func TestAdjustWorked(t *testing.T) {
-	modified := int(time.Now().Unix()) - 2*60 // 2 minutes ago
-	started := modified - 18*60               // 20 minutes ago
-	worked := 5 * 60                          // 5 minutes
-
-	slip := timeslip.Slip{
-		Project:  "Adjust",
-		Task:     "Worked",
-		Started:  started,
-		Worked:   worked,
-		Modified: modified,
-		Status:   status.Paused(),
+		return timeslip.Slip{
+			Project:  "timeWarrior",
+			Task:     "Adjust",
+			Started:  unixNow - started,
+			Worked:   worked,
+			Modified: unixNow - modified,
+			Status:   state,
+		}
 	}
 
-	// 10 minutes
-	adjustment := 10 * 60
+	t.Run("with enough time to adjust without affecting started/modified times", func(t *testing.T) {
+		adjustment := 10
 
-	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		slip := newTimeslip(60, 30, 10, status.Paused)
 
-	// 5 + 10 = 15 minutes
-	if slip.Worked != 900 {
-		t.Errorf("Expected worked time to have been incremented to 900 seconds, got %d", slip.Worked)
-	}
+		startedWas := slip.Started
+		modifiedWas := slip.Modified
 
-	if slip.Started != started {
-		t.Errorf("Expected started time to remain unchanged at %d, got %d", started, slip.Started)
-	}
+		err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		if err != nil {
+			t.Fatalf("unexpected error on adjust %s", err)
+		}
 
-	if slip.Modified != modified {
-		t.Errorf("Expected modified time to remain unchanged at %d, got %d", modified, slip.Modified)
-	}
-}
+		// worked + adjustment
+		if slip.Worked != 10+adjustment {
+			t.Errorf("expected worked time to have been incremented, got %d", slip.Worked)
+		}
 
-func TestAdjustWorkedAndStarted(t *testing.T) {
-	started := int(time.Now().Unix()) - 5*60 // 5 minutes ago
-	worked := 3 * 60                         // 3 minutes
-	modified := started + worked             // 2 minutes ago
+		if slip.Started != startedWas {
+			t.Errorf("expected started time %d to remain unchanged, got %d", startedWas, slip.Started)
+		}
 
-	slip := timeslip.Slip{
-		Project:  "AdjustWorked",
-		Task:     "AndStarted",
-		Started:  started,
-		Worked:   worked,
-		Modified: modified,
-		Status:   status.Paused(),
-	}
+		if slip.Modified != modifiedWas {
+			t.Errorf("expected modified time %d to remain unchanged, got %d", modifiedWas, slip.Modified)
+		}
+	})
 
-	// 12 minutes, which would make modified 10 minutes in the future!
-	adjustment := 12 * 60
+	t.Run("with enough time since last pause, update the modified time", func(t *testing.T) {
+		adjustment := 15
 
-	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		slip := newTimeslip(60, 30, 30, status.Paused)
+		startedWas := slip.Started
+		modifiedWas := slip.Modified
 
-	// 3 + 12 = 15 minutes
-	if slip.Worked != 900 {
-		t.Errorf("Expected worked time to have been incremented to 900 seconds, got %d", slip.Worked)
-	}
+		err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		if err != nil {
+			t.Fatalf("unexpected error on adjust %s", err)
+		}
 
-	if slip.Modified != modified {
-		t.Errorf("Expected modified time to remain unchanged at %d, got %d", modified, slip.Modified)
-	}
+		if slip.Worked != 30+adjustment {
+			t.Errorf("expected worked time to have been incremented, got %d", slip.Worked)
+		}
 
-	if slip.Started != started-adjustment {
-		t.Errorf("Expected started time to have been pushed back to %d, got %d", started-adjustment, slip.Started)
-	}
-}
+		if slip.Started != startedWas {
+			t.Errorf("expected started time %d to remain unchanged, got %d", startedWas, slip.Started)
+		}
 
-func TestAdjustWorkedAndModified(t *testing.T) {
-	started := int(time.Now().Unix()) - 20*60 // 20 minutes ago
-	worked := 2 * 60                          // 2 minutes
-	modified := started + worked              // 18 minutes ago
+		if slip.Modified != modifiedWas+adjustment {
+			t.Errorf("expected modified time to have been moved forward to %d, got %d", modifiedWas+adjustment, slip.Modified)
+		}
+	})
 
-	slip := timeslip.Slip{
-		Project:  "AdjustWorked",
-		Task:     "AndModified",
-		Started:  started,
-		Worked:   worked,
-		Modified: modified,
-		Status:   status.Paused(),
-	}
+	t.Run("when not enough modified time, start time is adjusted", func(t *testing.T) {
+		adjustment := 15 // would make modified 5 seconds in the future
 
-	// 4 minutes, which would make modified 14 minutes ago
-	adjustment := 4 * 60
+		slip := newTimeslip(60, 10, 50, status.Paused)
+		startedWas := slip.Started
+		modifiedWas := slip.Modified
 
-	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		if err != nil {
+			t.Fatalf("unexpected error on adjust %s", err)
+		}
 
-	// 2 + 4 = 6 minutes
-	if slip.Worked != 360 {
-		t.Errorf("Expected worked time to have been incremented to 360 seconds, got %d", slip.Worked)
-	}
+		if slip.Worked != 50+adjustment {
+			t.Errorf("expected worked time to have been incremented, got %d", slip.Worked)
+		}
 
-	if slip.Started != started {
-		t.Errorf("Expected started time to remain unchanged at %d, got %d", started, slip.Started)
-	}
+		if slip.Modified != modifiedWas {
+			t.Errorf("expected modified time %d to remain unchanged, got %d", modifiedWas, slip.Modified)
+		}
 
-	if slip.Modified != modified+adjustment {
-		t.Errorf("Expected modified time to have been moved forward to %d, got %d", modified+adjustment, slip.Modified)
-	}
-}
+		newStartTime := startedWas - adjustment
+		if slip.Started != newStartTime {
+			t.Errorf("expected started time to have been pushed back to %d, got %d", newStartTime, slip.Started)
+		}
+	})
 
-func TestAdjustNegative(t *testing.T) {
-	slip, _ := timeslip.New("AdjustPaused.AddNegativeValue")
-	slip.Pause()
+	t.Run("negative adjustments", func(t *testing.T) {
+		t.Run("should only adjust the worked time", func(t *testing.T) {
+			adjustment := -10
 
-	adjustment := -61 // 1m 1s
+			slip := newTimeslip(60, 10, 50, status.Paused)
+			startedWas := slip.Started
+			modifiedWas := slip.Modified
 
-	slip.Worked = 0
-	err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
-	if err != nil {
-		t.Fatalf("Unexepcted error: %s", err)
-	}
+			err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+			if err != nil {
+				t.Fatalf("unexpected error on adjust %s", err)
+			}
 
-	if slip.Worked < 0 {
-		t.Errorf("Unexpected worked time, can not be a negative number, got %d", slip.Worked)
-	}
+			if slip.Worked != 40 {
+				t.Errorf("expected worked time to be decremented to %d, got %d", 40, slip.Worked)
+			}
 
-	slip.Worked = 120
-	slip.Started -= slip.Worked
+			if slip.Started != startedWas {
+				t.Errorf("expected started time %d to be unchanged, got %d", startedWas, slip.Started)
+			}
 
-	started := slip.Started
-	modified := slip.Modified
-	worked := slip.Worked
+			if slip.Modified != modifiedWas {
+				t.Errorf("expected modified time %d to be unchanged, got %d", modifiedWas, slip.Modified)
+			}
+		})
 
-	slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		t.Run("when adjustment is more than worked time", func(t *testing.T) {
+			adjustment := -20
 
-	if slip.Worked != worked-61 {
-		t.Errorf("Expected worked time to have been decremented to %d seconds, got %d", worked-61, slip.Worked)
-	}
+			slip := newTimeslip(60, 50, 10, status.Paused)
 
-	if slip.Started != started {
-		t.Errorf("Expected started time to be unchanged, was: %d, now: %d", started, slip.Started)
-	}
+			err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+			if err != nil {
+				t.Fatalf("unexpected error on adjust %s", err)
+			}
 
-	if slip.Modified != modified {
-		t.Errorf("Expected modified time to be unchanged, was: %d, now: %d", modified, slip.Modified)
-	}
-}
+			if slip.Worked != 0 {
+				t.Errorf("worked time should be set to zero, got %d", slip.Worked)
+			}
+		})
+	})
 
-func TestAdjustWithMissingTimeUnit(t *testing.T) {
-	slip, _ := timeslip.New("AdjustPaused.MissingTimeUnit")
-	slip.Pause()
+	t.Run("when adjustment is missing the time unit", func(t *testing.T) {
+		slip := newTimeslip(60, 0, 60, status.Paused)
 
-	worked := slip.Worked
+		worked := slip.Worked
 
-	err := slip.Adjust("-1")
-	if err == nil {
-		t.Fatalf("Expected an error, non returned")
-	}
+		err := slip.Adjust("1")
+		if err == nil {
+			t.Fatalf("expected an error")
+		}
 
-	if err.Error() != "invalid time unit, got '1'" {
-		t.Errorf("Expected invalid time format error, got '%s'", err)
-	}
+		if err.Error() != "invalid time unit, got '1'" {
+			t.Errorf("expected invalid unit error, got '%s'", err)
+		}
 
-	if slip.Worked != worked {
-		t.Errorf("Expected worked time to be unchanged, was %d, now %d", worked, slip.Worked)
-	}
+		if slip.Worked != worked {
+			t.Errorf("expected worked time %d to be unchanged, got %d", worked, slip.Worked)
+		}
+	})
+
+	t.Run("with a started timeslip", func(t *testing.T) {
+		adjustment := 10
+
+		slip := newTimeslip(10, 10, 0, status.Started)
+		startedWas := slip.Started
+
+		err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		if err != nil {
+			t.Fatalf("unexpected error on adjust %s", err)
+		}
+
+		// 10 since starting + adjustment of 10
+		if slip.Worked != 20 {
+			t.Errorf("expected worked time to have been incremented, got %d", slip.Worked)
+		}
+
+		newStarted := startedWas - adjustment // move back started for adjustment
+		if slip.Started != newStarted {
+			t.Errorf("expected started time %d to be moved back, got %d", newStarted, slip.Started)
+		}
+
+		newModified := int(time.Now().Unix()) // because Adjust() pauses the timeslip
+		if slip.Modified != newModified {
+			t.Errorf("expected modified time %d to be current time, got %d", newModified, slip.Modified)
+		}
+
+		if slip.Status != status.Started {
+			t.Errorf("expected status to remain unchanged, got '%s'", slip.Status)
+		}
+	})
+
+	t.Run("when timeslip has been resumed", func(t *testing.T) {
+		adjustment := 300
+
+		slip := newTimeslip(60, 5, 55, status.Resumed)
+		startedWas := slip.Started
+
+		err := slip.Adjust(fmt.Sprintf("%ds", adjustment))
+		if err != nil {
+			t.Fatalf("unexpected error on adjust %s", err)
+		}
+
+		// 55 + 5 since resuming + adjustment of 300
+		if slip.Worked != 360 {
+			t.Errorf("expected worked time to have been incremented, got %d", slip.Worked)
+		}
+
+		newStarted := startedWas - adjustment // move back started for adjustment
+		if slip.Started != newStarted {
+			t.Errorf("expected started time %d to be moved back, got %d", newStarted, slip.Started)
+		}
+
+		newModified := int(time.Now().Unix()) // because Adjust() pauses the timeslip
+		if slip.Modified != newModified {
+			t.Errorf("expected modified time %d to be current time, got %d", newModified, slip.Modified)
+		}
+
+		if slip.Status != status.Resumed {
+			t.Errorf("expected status to remain unchanged, got '%s'", slip.Status)
+		}
+	})
 }

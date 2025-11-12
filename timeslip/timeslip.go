@@ -41,7 +41,7 @@ func New(name string) (*Slip, error) {
 		Description: "New Timeslip",
 		Started:     currentTime,
 		Modified:    currentTime,
-		Status:      status.Started(),
+		Status:      status.Started,
 		UUID:        uuid.New().String(),
 	}
 
@@ -56,28 +56,24 @@ func Unmarshal(data []byte, slip *Slip) error {
 
 // Pause a started timeslip.
 func (s *Slip) Pause() error {
-	if s.isPaused() {
+	if s.Status == status.Paused {
 		return fmt.Errorf("slip is already paused")
 	}
 
-	s.Status = status.Paused()
+	s.Status = status.Paused
 	s.Worked += timeNow() - s.Modified
 	s.Modified = timeNow()
 
 	return nil
 }
 
-func (s *Slip) isPaused() bool {
-	return s.Status == status.Paused()
-}
-
 // Resume a paused timeslip.
 func (s *Slip) Resume() error {
-	if s.Status == status.Started() {
+	if s.Status != status.Paused {
 		return fmt.Errorf("slip is already in progress")
 	}
 
-	s.Status = status.Started()
+	s.Status = status.Resumed
 	s.Modified = timeNow()
 
 	return nil
@@ -87,7 +83,7 @@ func (s *Slip) Resume() error {
 func (s *Slip) Done(description string) {
 	currentTime := timeNow()
 
-	if s.Status == status.Started() {
+	if s.Status == status.Started {
 		s.Worked += currentTime - s.Modified
 		s.Finished = currentTime
 		s.Modified = currentTime
@@ -96,7 +92,7 @@ func (s *Slip) Done(description string) {
 	}
 
 	s.Description = description
-	s.Status = status.Completed()
+	s.Status = status.Completed
 }
 
 // Adjust the current worked time from the given string value.
@@ -104,8 +100,10 @@ func (s *Slip) Done(description string) {
 // adjustment, unless that would put it into the future, in
 // which case the started time should be pushed back.
 func (s *Slip) Adjust(adjustment string) error {
-	if !s.isPaused() {
-		return fmt.Errorf("only paused timeslips can be changed")
+	// pause so that the worked/modified are updated.
+	lastStatus := s.Status
+	if s.Status != status.Paused {
+		s.Pause()
 	}
 
 	a := worked.WorkTime{}
@@ -133,6 +131,11 @@ func (s *Slip) Adjust(adjustment string) error {
 		s.Started = s.Modified - s.Worked
 	}
 
+	// update the status if it wasn't paused
+	if lastStatus != status.Paused {
+		s.Status = lastStatus
+	}
+
 	return nil
 }
 
@@ -148,7 +151,7 @@ func (s *Slip) Name() string {
 // If a timeslip is currently started, the worked time is adjusted based
 // on the modified and current time.
 func (s *Slip) TotalTimeWorked() int {
-	if s.Status == status.Started() {
+	if s.Status != "" && s.Status != status.Paused {
 		return timeNow() - s.Modified + s.Worked
 	}
 	return s.Worked
@@ -161,12 +164,12 @@ func (s *Slip) String() string {
 	w := worked.WorkTime{}
 	w.FromSeconds(s.TotalTimeWorked())
 
-	pausedTimestamp := ""
-	if s.isPaused() {
-		pausedTimestamp = fmt.Sprintf(" (%s)", time.Unix(int64(s.Modified), 0).Format("2006-01-02 15:04"))
+	timestampSuffix := ""
+	if s.Status == status.Paused || s.Status == status.Resumed {
+		timestampSuffix = fmt.Sprintf(" (%s)", time.Unix(int64(s.Modified), 0).Format("2006-01-02 15:04"))
 	}
 
-	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s%s", s.Name(), started, w.String(), s.Status, pausedTimestamp)
+	return fmt.Sprintf("%s | Started: %s | Worked: %s | Status: %s%s", s.Name(), started, w.String(), s.Status, timestampSuffix)
 }
 
 // ToJson converts a timeslip to a JSON string.
