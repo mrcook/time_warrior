@@ -3,6 +3,11 @@
 ## HEAD
 
 
+## 1.4.1 (2025-12-27)
+
+- Fix `TotalTimeWorked` calculation on completing a paused timeslip.
+
+
 ## 1.4.0 (2025-11-12)
 
 - Add a "resumed" status for when a paused timeslip is resumed.

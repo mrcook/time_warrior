@@ -60,9 +60,11 @@ func (s *Slip) Pause() error {
 		return fmt.Errorf("slip is already paused")
 	}
 
+	now := int(time.Now().Unix())
+
 	s.Status = status.Paused
-	s.Worked += timeNow() - s.Modified
-	s.Modified = timeNow()
+	s.Worked += now - s.Modified
+	s.Modified = now
 
 	return nil
 }
@@ -74,14 +76,14 @@ func (s *Slip) Resume() error {
 	}
 
 	s.Status = status.Resumed
-	s.Modified = timeNow()
+	s.Modified = int(time.Now().Unix())
 
 	return nil
 }
 
 // Done marks a timeslip as completed.
 func (s *Slip) Done(description string) {
-	currentTime := timeNow()
+	currentTime := int(time.Now().Unix())
 
 	if s.Status == status.Started {
 		s.Worked += currentTime - s.Modified
@@ -122,7 +124,7 @@ func (s *Slip) Adjust(adjustment string) error {
 		return nil
 	}
 
-	now := timeNow()
+	now := int(time.Now().Unix())
 	workedTime := s.Started + s.Worked
 
 	if workedTime > s.Modified && workedTime <= now {
@@ -148,13 +150,13 @@ func (s *Slip) Name() string {
 }
 
 // TotalTimeWorked returns the total time worked on a timeslip.
-// If a timeslip is currently started, the worked time is adjusted based
+// If a timeslip is started/resumed, the worked time is adjusted based
 // on the modified and current time.
 func (s *Slip) TotalTimeWorked() int {
-	if s.Status != "" && s.Status != status.Paused {
-		return timeNow() - s.Modified + s.Worked
+	if s.Status == "" || s.Status == status.Paused || s.Status == status.Completed {
+		return s.Worked
 	}
-	return s.Worked
+	return int(time.Now().Unix()) - s.Modified + s.Worked
 }
 
 // String returns a CLI friendly representation of the timeslip.
@@ -192,9 +194,4 @@ func parseProjectName(name string) (string, string, error) {
 	default:
 		return "", "", fmt.Errorf("bad Project/Task name format. Expected 'ProjectName.TaskName' format")
 	}
-}
-
-// timeNow returns a Unix timestamp.
-func timeNow() int {
-	return int(time.Now().Unix())
 }

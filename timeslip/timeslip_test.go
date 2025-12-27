@@ -338,89 +338,96 @@ func TestSlip_Name(t *testing.T) {
 
 func TestSlip_StringOutput(t *testing.T) {
 	now := time.Now()
-	sixMinutes := 6 * time.Minute
-	startedAgo := now.Add(-sixMinutes)
 
-	ts := timeslip.Slip{
-		Project:  "timeWarrior",
-		Task:     "String",
-		Started:  int(startedAgo.Unix()),
-		Worked:   int(sixMinutes.Seconds()),
-		Modified: int(now.Unix()),
-		Status:   status.Paused,
-	}
-	startStr := startedAgo.Format("2006-01-02 15:04")
-	modifiedStr := now.Format("2006-01-02 15:04")
+	t.Run("finished timeslip after it was paused", func(t *testing.T) {
+		started := 1706833230
+		worked := 10
+		modified := started + worked
+		finished := modified + 10
 
-	expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused (%s)", startStr, modifiedStr)
+		ts := timeslip.Slip{
+			Project:  "timeWarrior",
+			Task:     "DoneAfterPause",
+			Started:  started,
+			Worked:   worked,
+			Finished: finished,
+			Modified: modified,
+			Status:   status.Completed,
+		}
+		expectedOutput := "timeWarrior.DoneAfterPause | Started: 2024-02-02 01:20 | Worked: 10 seconds | Status: completed"
 
-	output := ts.String()
-	if output != expectedOutput {
-		t.Errorf("formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
-	}
+		output := ts.String()
+		if output != expectedOutput {
+			t.Errorf("formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
+		}
+	})
+
+	t.Run("it should output the correct format", func(t *testing.T) {
+		sixMinutes := 6 * time.Minute
+		startedAgo := now.Add(-sixMinutes)
+
+		ts := timeslip.Slip{
+			Project:  "timeWarrior",
+			Task:     "String",
+			Started:  int(startedAgo.Unix()),
+			Worked:   int(sixMinutes.Seconds()),
+			Modified: int(now.Unix()),
+			Status:   status.Paused,
+		}
+		startStr := startedAgo.Format("2006-01-02 15:04")
+		modifiedStr := now.Format("2006-01-02 15:04")
+
+		expectedOutput := fmt.Sprintf("timeWarrior.String | Started: %s | Worked: 6 minutes | Status: paused (%s)", startStr, modifiedStr)
+
+		output := ts.String()
+		if output != expectedOutput {
+			t.Errorf("formatting incorrect:\n     got: %s\nexpected: %s", output, expectedOutput)
+		}
+	})
 }
 
 func TestSlip_TotalTimeWorked(t *testing.T) {
-	newTimeslip := func(modified, worked int, state string) timeslip.Slip {
-		unixNow := int(time.Now().Unix())
-
-		return timeslip.Slip{
-			Project:  "timeWarrior",
-			Task:     "TimeWorked",
-			Started:  unixNow - 60,
-			Worked:   worked,
-			Modified: unixNow - modified,
-			Status:   state,
-		}
+	tests := map[string]struct {
+		status                    string
+		started, worked, modified int // in seconds ago
+		expected                  int
+	}{
+		"started, with no pauses/resumes": {
+			status.Started, 100, 0, 100, 100,
+		},
+		"paused, with no previous pauses": {
+			status.Paused, 120, 30, 120 - 30, 30,
+		},
+		"paused, with multiple previous pauses": {
+			status.Paused, 800, 5, 100, 5,
+		},
+		"resumed after a pause": {
+			status.Resumed, 60, 22, 7, 22 + 7,
+		},
+		"completed without any pauses": {
+			status.Completed, 488, 488, 0, 488,
+		},
+		"completed after a pause": {
+			status.Completed, 65535, 30, 0, 30,
+		},
 	}
 
-	t.Run("started timeslip with no pauses", func(t *testing.T) {
-		modifiedAgo := 60
-		previouslyWorked := 0
+	now := time.Now()
+	for msg, test := range tests {
+		t.Run(msg, func(t *testing.T) {
+			ts := timeslip.Slip{
+				Started:  int(now.Add(-time.Duration(test.started) * time.Second).Unix()),
+				Worked:   test.worked,
+				Modified: int(now.Add(-time.Duration(test.modified) * time.Second).Unix()),
+				Status:   test.status,
+			}
 
-		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Started)
-		want := modifiedAgo + previouslyWorked // 60+0
-
-		if slip.TotalTimeWorked() != want {
-			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
-		}
-	})
-
-	t.Run("currently paused timeslip, no previous pauses", func(t *testing.T) {
-		modifiedAgo := 30
-		previouslyWorked := 30
-
-		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Paused)
-		want := previouslyWorked // 30
-
-		if slip.TotalTimeWorked() != want {
-			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
-		}
-	})
-
-	t.Run("resumed timeslip with only a single pause", func(t *testing.T) {
-		modifiedAgo := 30
-		previouslyWorked := 30
-
-		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Resumed)
-		want := modifiedAgo + previouslyWorked // 30+30
-
-		if slip.TotalTimeWorked() != want {
-			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
-		}
-	})
-
-	t.Run("resumed timeslip with multiple previous pauses", func(t *testing.T) {
-		modifiedAgo := 10
-		previouslyWorked := 15
-
-		slip := newTimeslip(modifiedAgo, previouslyWorked, status.Resumed)
-		want := modifiedAgo + previouslyWorked // 10+15
-
-		if slip.TotalTimeWorked() != want {
-			t.Errorf("expected %d seconds worked, got %d", want, slip.TotalTimeWorked())
-		}
-	})
+			total := ts.TotalTimeWorked()
+			if total != test.expected {
+				t.Errorf("expected %d seconds worked, got %d", test.expected, total)
+			}
+		})
+	}
 }
 
 func TestSlip_ToJson(t *testing.T) {
