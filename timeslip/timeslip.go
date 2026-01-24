@@ -85,7 +85,7 @@ func (s *Slip) Resume() error {
 func (s *Slip) Done(description string) {
 	currentTime := int(time.Now().Unix())
 
-	if s.Status == status.Started {
+	if s.Status == status.Started || s.Status == status.Resumed {
 		s.Worked += currentTime - s.Modified
 		s.Finished = currentTime
 		s.Modified = currentTime

@@ -196,13 +196,14 @@ func TestSlip_Resume(t *testing.T) {
 }
 
 func TestSlip_Done(t *testing.T) {
-	unixNow := int(time.Now().Unix())
+	unixNow := func() int { return int(time.Now().Unix()) }
 
 	t.Run("finished a started timeslip", func(t *testing.T) {
+		now := unixNow()
 		ts := timeslip.Slip{
-			Started:  unixNow - 60,
+			Started:  now - 60,
 			Worked:   0,
-			Modified: unixNow - 60,
+			Modified: now - 60,
 			Status:   status.Started,
 		}
 		modifiedWas := ts.Modified
@@ -232,10 +233,11 @@ func TestSlip_Done(t *testing.T) {
 	})
 
 	t.Run("finishing a paused timeslip", func(t *testing.T) {
+		now := unixNow()
 		ts := timeslip.Slip{
-			Started:  unixNow - 60,
+			Started:  now - 60,
 			Worked:   30,
-			Modified: unixNow - 30,
+			Modified: now - 30,
 			Status:   status.Paused,
 		}
 		modifiedWas := ts.Modified
@@ -256,6 +258,30 @@ func TestSlip_Done(t *testing.T) {
 
 		if ts.Modified != modifiedWas {
 			t.Error("modified time should not have changed")
+		}
+	})
+
+	t.Run("finishing a resumed timeslip", func(t *testing.T) {
+		now := unixNow()
+		ts := timeslip.Slip{
+			Started:  now - 60,
+			Worked:   30,
+			Modified: now - 10,
+			Status:   status.Resumed,
+		}
+
+		ts.Done("Write tests for completing a resumed timeslip")
+
+		if ts.Finished != now {
+			t.Errorf("expected finished time %d to equal current time %d", ts.Finished, now)
+		}
+
+		if ts.Worked != 40 {
+			t.Errorf("worked time should include time since resumed, got %d", ts.Worked)
+		}
+
+		if ts.Modified != now {
+			t.Errorf("expected modified time %d to equal current time %d", ts.Modified, now)
 		}
 	})
 }

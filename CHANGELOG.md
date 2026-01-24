@@ -2,6 +2,8 @@
 
 ## HEAD
 
+- Bugfix: `done` cmd correctly calculates worked time for resumed timeslips.
+
 
 ## 1.4.1 (2025-12-27)
 
