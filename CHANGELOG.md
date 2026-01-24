@@ -2,7 +2,11 @@
 
 ## HEAD
 
+
+## 1.4.2 (2026-01-24)
+
 - Bugfix: `done` cmd correctly calculates worked time for resumed timeslips.
+- Update `go.mod` dependencies: `uuid` and `cobra`.
 
 
 ## 1.4.1 (2025-12-27)
